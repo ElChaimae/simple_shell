@@ -1,27 +1,31 @@
 #include "main.h"
 
-/**
- * main - entry point for the program
- * @argc: the number of command-line arguments passed to the program
- * @argv: an array of strings containing the command-line arguments
- *
- * Return: 0 on success
- */
-int main(int argc __attribute__((unused)), char **argv __attribute__((unused)))
+int main(void)
 {
-	char *input = NULL;
-	size_t input_size = 0;
-	char **args = NULL;
+    char *input_line = NULL;
+    size_t input_size = 0;
+    int status;
+char **args = tokenize(input_line);
 
-	while (1)
-	{
-		print_prompt();
-		read_input(&input, &input_size);
-		input[strcspn(input, "\n")] = '\0';
-		args = tokenize(input);
-		exec_cmd(args);
-	}
-	free(input);
+    while (1)
+    {
+        /* Print the prompt and read input */
+        status = print_prompt();
+        if (status == -1)
+            continue;
 
-	return (0);
+        status = read_input(&input_line, &input_size);
+        if (status == -1)
+            continue;
+
+        /* Execute the command */
+        exec_cmd(args);
+
+        /* Free memory */
+        free(args);
+        free(input_line);
+    }
+
+    return (0);
 }
+

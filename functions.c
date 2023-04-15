@@ -9,14 +9,14 @@
  */
 int read_input(char **input_line, size_t *input_size)
 {
-	int read_result = getline(input_line, input_size, stdin);
+int read_result = getline(input_line, input_size, stdin);
 
-	if (read_result == -1)
-	{
-		write(STDERR_FILENO, " Exit..\n", 8);
-		exit(EXIT_FAILURE);
-	}
-	return (0);
+if (read_result == -1)
+{
+write(STDERR_FILENO, " Exit..\n", 8);
+exit(EXIT_FAILURE);
+}
+return (0);
 }
 
 /**
@@ -26,15 +26,15 @@ int read_input(char **input_line, size_t *input_size)
  */
 int print_prompt(void)
 {
-	char *prompt_txt = "shell$";
-	int write_result = write(STDOUT_FILENO, prompt_txt, strlen(prompt_txt));
+char *prompt_txt = "shell$";
+int write_result = write(STDOUT_FILENO, prompt_txt, strlen(prompt_txt));
 
-	if (write_result == -1)
-	{
-		perror("Error writing prompt to stdout");
-		return (-1);
-	}
-	return (0);
+if (write_result == -1)
+{
+perror("Error writing prompt to stdout");
+return (-1);
+}
+return (0);
 }
 
 /**
@@ -45,57 +45,76 @@ int print_prompt(void)
  */
 char **tokenize(char *input)
 {
-	int bufferSize = 10;
-	char **args = malloc(bufferSize * sizeof(char *));
-	char *token;
-	int count = 0;
+int bufferSize = 10;
+char **args = malloc(bufferSize * sizeof(char *));
+char *token;
+int count = 0;
 
-	token = strtok(input, " ");
-	args[count++] = token;
+token = strtok(input, " ");
+args[count++] = token;
 
-	while (token != NULL)
-	{
-		if (count >= bufferSize)
-		{
-			bufferSize *= 2;
-			args = realloc(args, bufferSize * sizeof(char *));
-		}
-		token = strtok(NULL, " ");
-		args[count++] = token;
-	}
-	return (args);
+while (token != NULL)
+{
+if (count >= bufferSize)
+{
+bufferSize *= 2;
+args = realloc(args, bufferSize *sizeof(char *));
+}
+token = strtok(NULL, " ");
+args[count++] = token;
+}
+return (args);
 }
 
 
 /**
- * exec_cmd - Execute a command with given arguments using execve.
- * @args: The arguments for the command to be executed.
+ * execute_command - Executes a command.
+ * @full_path: The full path to the command.
+ * @args: An array of arguments for the command.
  *
- * Return: On success, returns 0. On failure, returns -1.
+ * Return: 0 on success, -1 on failure.
  */
 int exec_cmd(char **args)
 {
-	pid_t pid;
-	int status;
+extern char **environ;
+pid_t pid;
+int status;
+char *full_path = (NULL);
 
-	if (!*args || !args[0])
-	{
-		return (-1);
-	}
-	pid = fork();
-	if (pid == -1)
-	{
-		perror("Fork error");
-		return (-1);
-	}
-	else if (pid == 0)
-	{
-		execve(args[0], args, environ);
-		perror(args[0]);
-		exit(EXIT_FAILURE);
-	}
-	else
-		waitpid(pid, &status, 0);
+if (!args || !*args || !**args) /* Check for valid command */
+return (-1);
 
-	return (0);
+if (strcmp(args[0], "exit") == 0) /* Handle exit command */
+return (exit_shell());
+
+/* Find the full path of the command */
+if (access(args[0], X_OK) == 0)
+full_path = args[0];
+else
+full_path = find_command(args[0]);
+
+if (!full_path)/* Execute the command */
+return (-1);
+
+pid = fork();
+if (pid == -1)
+{
+perror("Fork error");
+free(full_path);
+return (-1);
 }
+else if (pid == 0)
+{
+execve(full_path, args, environ);
+perror(full_path);
+free(full_path);
+exit(EXIT_FAILURE);
+}
+else
+waitpid(pid, &status, 0);
+
+free(full_path);
+
+return (0);
+}
+

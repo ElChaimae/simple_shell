@@ -1,17 +1,24 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-extern char **environ;
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
-#include <errno.h>
 #include <sys/wait.h>
 
+/* function prototypes */
 int read_input(char **input_line, size_t *input_size);
 int print_prompt(void);
-char** tokenize(char *input);
+char **tokenize(char *input);
 int exec_cmd(char **args);
+char *find_command(char *cmd);
+int exit_shell(void);
+char *get_path(void);
+char *allocate_full_path(char *path, char *cmd);
+int find_in_directory(char *dir, char *cmd, char *full_path);
+void print_env(char **args);
+char *_getenv(const char *name);
 
-#endif
+#endif /* MAIN_H */
+
