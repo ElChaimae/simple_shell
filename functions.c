@@ -82,6 +82,8 @@ int exec_cmd(char **args)
 	{
 		return (-1);
 	}
+	if (strcmp(args[0], "exit") == 0)
+		exit(0);
 	pid = fork();
 	if (pid == -1)
 	{
