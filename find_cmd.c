@@ -37,8 +37,13 @@ perror("Unable to allocate memory");
 return (NULL);
 }
 
+strcpy(full_path, path);
+strcat(full_path, "/");
+strcat(full_path, cmd);
+
 return (full_path);
 }
+
 
 /**
  * find_in_directory - Find the command in a directory.
