@@ -58,7 +58,14 @@ while (token != NULL)
 if (count >= bufferSize)
 {
 bufferSize *= 2;
-args = realloc(args, bufferSize *sizeof(char *));
+char **temp = realloc(args, bufferSize * sizeof(char *));
+if (!temp)
+{
+perror("Error reallocating memory");
+free(args);
+return (NULL);
+}
+args = temp;
 }
 token = strtok(NULL, " ");
 args[count++] = token;
@@ -68,7 +75,7 @@ return (args);
 
 
 /**
- * execute_command - Executes a command.
+ * exec_cmd - Executes a command.
  * @full_path: The full path to the command.
  * @args: An array of arguments for the command.
  *
@@ -117,4 +124,3 @@ free(full_path);
 
 return (0);
 }
-
