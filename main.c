@@ -1,31 +1,48 @@
 #include "main.h"
 
+/**
+ * free_tokens - Frees a double pointer array of strings
+ * @tokens: Double pointer array of strings to free
+ */
+void free_tokens(char **tokens)
+{
+    size_t i;
+
+    for (i = 0; tokens[i]; i++)
+        free(tokens[i]);
+
+    free(tokens);
+}
+
+/**
+ * main - Simple Shell entry point
+ *
+ * Return: Always 0
+ */
 int main(void)
 {
-    char *input_line = NULL;
-    size_t input_size = 0;
-    int status;
-char **args = tokenize(input_line);
+    char *line = NULL;
+    char **tokens = NULL;
+    size_t len = 0;
+    ssize_t read = 0;
 
-    while (1)
-    {
-        /* Print the prompt and read input */
-        status = print_prompt();
-        if (status == -1)
+    do {
+        printf("$ ");
+        read = getline(&line, &len, stdin);
+
+        if (read == -1)
+            break;
+
+        tokens = tokenize(line);
+        if (tokens == NULL)
             continue;
 
-        status = read_input(&input_line, &input_size);
-        if (status == -1)
-            continue;
+        execute_command(tokens);
 
-        /* Execute the command */
-        exec_cmd(args);
+        free_tokens(tokens);
+    } while (1);
 
-        /* Free memory */
-        free(args);
-        free(input_line);
-    }
-
+    free(line);
     return (0);
 }
 

@@ -49,7 +49,7 @@ int bufferSize = 10;
 char **args = malloc(bufferSize * sizeof(char *));
 char *token;
 int count = 0;
-
+char **temp;
 token = strtok(input, " ");
 args[count++] = token;
 
@@ -58,7 +58,7 @@ while (token != NULL)
 if (count >= bufferSize)
 {
 bufferSize *= 2;
-char **temp = realloc(args, bufferSize * sizeof(char *));
+temp = realloc(args, bufferSize *sizeof(char *));
 if (!temp)
 {
 perror("Error reallocating memory");
@@ -73,55 +73,22 @@ args[count++] = token;
 return (args);
 }
 
-
 /**
- * exec_cmd - Executes a command.
- * @full_path: The full path to the command.
- * @args: An array of arguments for the command.
- *
- * Return: 0 on success, -1 on failure.
+ *  is_ls - checks if command is bin/ls
+ *  @command - command entered by user
+ *  Return: 1 on success
  */
-int exec_cmd(char **args)
+int is_ls(char *command)
 {
-extern char **environ;
-pid_t pid;
-int status;
-char *full_path = (NULL);
+char *ls = "/bin/ls";
+int i;
 
-if (!args || !*args || !**args) /* Check for valid command */
-return (-1);
-
-if (strcmp(args[0], "exit") == 0) /* Handle exit command */
-return (exit_shell());
-
-/* Find the full path of the command */
-if (access(args[0], X_OK) == 0)
-full_path = args[0];
-else
-full_path = find_command(args[0]);
-
-if (!full_path)/* Execute the command */
-return (-1);
-
-pid = fork();
-if (pid == -1)
+for (i = 0; command[i] && ls[i]; i++)
 {
-perror("Fork error");
-free(full_path);
-return (-1);
-}
-else if (pid == 0)
-{
-execve(full_path, args, environ);
-perror(full_path);
-free(full_path);
-exit(EXIT_FAILURE);
-}
-else
-waitpid(pid, &status, 0);
-
-free(full_path);
-
+if (command[i] != ls[i])
 return (0);
+}
+
+return (command[i] == '\0' && ls[i] == '\0');
 }
 

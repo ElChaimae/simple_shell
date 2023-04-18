@@ -1,12 +1,12 @@
 #include "main.h"
 
 /**
- * get_path - Get the PATH environment variable.
+ * get_path_value - Get the PATH environment variable.
  *
  * Return: On success, returns a pointer to the PATH environment variable.
  * On failure, returns NULL.
  */
-char *get_path(void)
+char *get_path_value(void)
 {
 char *path = _getenv("PATH");
 
@@ -90,7 +90,7 @@ char *find_command(char *cmd)
 char *path, *full_path;
 
 /* Get the PATH environment variable */
-path = get_path();
+path = get_path_value();
 if (!path)
 {
 return (NULL);
