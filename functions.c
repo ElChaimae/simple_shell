@@ -73,22 +73,3 @@ args[count++] = token;
 return (args);
 }
 
-/**
- *  is_ls - checks if command is bin/ls
- *  @command - command entered by user
- *  Return: 1 on success
- */
-int is_ls(char *command)
-{
-char *ls = "/bin/ls";
-int i;
-
-for (i = 0; command[i] && ls[i]; i++)
-{
-if (command[i] != ls[i])
-return (0);
-}
-
-return (command[i] == '\0' && ls[i] == '\0');
-}
-
