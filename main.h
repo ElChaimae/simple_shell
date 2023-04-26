@@ -4,6 +4,8 @@
 #define MAX_INPUT_LENGTH 1024
 #define TOKEN_BUFSIZE 64
 
+extern char **environ;
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
