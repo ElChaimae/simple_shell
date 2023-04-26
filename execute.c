@@ -18,8 +18,8 @@
  */
 void error(char *msg)
 {
-    perror(msg);
-    exit(EXIT_FAILURE);
+perror(msg);
+exit(EXIT_FAILURE);
 }
 
 /**
@@ -29,41 +29,40 @@ void error(char *msg)
  */
 int execute(char **args)
 {
-    char *token;
-    int i = 0;
-    int status;
+char *token;
+int i = 0;
+int status;
 
-    token = strtok(args[0], " \n");
-    while (token != NULL)
-    {
-        args[i++] = token;
-        token = strtok(NULL, " \n");
-    }
-    args[i] = NULL;
-
-    if (strcmp(args[0], "cd") == 0)
-    {
-        if (args[1] == NULL)
-            chdir(getenv("HOME"));
-        else if (chdir(args[1]) == -1)
-            error("cd failed");
-    }
-    else
-    {
-        pid_t pid = fork();
-        if (pid == -1)
-            error("fork failed");
-        else if (pid == 0)
-        {
-            if (execvp(args[0], args) == -1)
-                error("execvp failed");
-        }
-        else
-        {
-            if (wait(&status) == -1)
-                error("wait failed");
-        }
-    }
-    return (0);
+token = strtok(args[0], " \n");
+while (token != NULL)
+{
+args[i++] = token;
+token = strtok(NULL, " \n");
+}
+args[i] = NULL;
+if (strcmp(args[0], "cd") == 0)
+{
+if (args[1] == NULL)
+chdir(getenv("HOME"));
+else if (chdir(args[1]) == -1)
+error("cd failed");
+}
+else
+{
+pid_t pid = fork();
+if (pid == -1)
+error("fork failed");
+else if (pid == 0)
+{
+if (execvp(args[0], args) == -1)
+error("execvp failed");
+}
+else
+{
+if (wait(&status) == -1)
+error("wait failed");
+}
+}
+return (0);
 }
 
