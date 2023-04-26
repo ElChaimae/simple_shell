@@ -1,12 +1,12 @@
 #include"main.h"
 
-char* get_command_path(char *command);
+char *get_command_path(char *command);
 
 /**
  * execute_cmd - Executes a command in a new process
  * @path: The full path of the executable file to execute
  * @tokens: array of strings containing the command and its args
- * return: 0 if successful, -1 if an error occurred
+ * Return: 0 if successful, -1 if an error occurred
  */
 int execute_cmd(char *path, char **tokens)
 {
@@ -76,22 +76,30 @@ return (0);
 }
 
 /**
- *
+ * execute_cd_command - Change the current working directory.
+ * @tokens: An array of command arguments.
+ * Return: On success, returns 0. On failure, returns 1.
  */
-int execute_cd_command(char **tokens) {
-    char *new_dir;
-    if (tokens[1] == NULL) {
-        /*if no argument is provided, go to home directory*/
-        new_dir = getenv("HOME");
-    } else {
-        new_dir = tokens[1];
-    }
-    if (chdir(new_dir) != 0) {
-        /*if chdir() fails, print an error message*/
-        print_error("cd");
-        return 1;
-    }
-    return 0;
+int execute_cd_command(char **tokens)
+{
+	char *new_dir;
+
+	if (tokens[1] == NULL)
+	{
+		/*if no argument is provided, go to home directory*/
+		new_dir = getenv("HOME");
+	}
+	else
+	{
+		new_dir = tokens[1];
+	}
+	if (chdir(new_dir) != 0)
+	{
+		/*if chdir() fails, print an error message*/
+		print_error("cd");
+		return (1);
+	}
+	return (0);
 }
 
 
@@ -99,7 +107,7 @@ int execute_cd_command(char **tokens) {
  * get_path - Searches for an executable file in the directories
  * listed in the PATH environment variable.
  * @command: the name of the command to search for.
- * return: The full path of the executable file if found
+ * Return: The full path of the executable file if found
  * or NULL if not found.
  */
 char *get_path(char *command)
@@ -146,7 +154,7 @@ return (NULL);
 /**
  * check_if_ls - Checks if the given command is "ls"
  * @cmd: The command to check
- * return: 1 if the command is "ls", 0 otherwise
+ * Return: 1 if the command is "ls", 0 otherwise
  */
 int check_if_ls(char *cmd)
 {
