@@ -58,14 +58,14 @@ return;
  */
 int shell_env(char **envp)
 {
-    int i;
+int i;
 
-    for (i = 0; envp[i] != NULL; i++)
-    {
-        write(STDOUT_FILENO, envp[i], strlen(envp[i]));
-        write(STDOUT_FILENO, "\n", 1);
-    }
-    return (1);
+for (i = 0; envp[i] != NULL; i++)
+{
+write(STDOUT_FILENO, envp[i], strlen(envp[i]));
+write(STDOUT_FILENO, "\n", 1);
+}
+return (1);
 }
 
 /**
@@ -76,44 +76,44 @@ int shell_env(char **envp)
  */
 int shell_setenv(char **args, char **envp)
 {
-    char *name, *value, *env_var_name, *env_var_value, *new_env_var;
-    int index;
+char *name, *value, *env_var_name, *env_var_value, *new_env_var;
+int index;
 
-    if (args[1] == NULL)
-    {
-        write(STDOUT_FILENO, "Usage: setenv NAME [VALUE]\n", 27);
-        return (1);
-    }
-    name = args[1];
-    if (args[2] != NULL)
-    {
-        value = args[2];
-    }
-    else
-    {
-        value = "";
-    }
-    index = find_env_var(name, envp);
-    if (index >= 0)
-    {
-        split_env_var(envp[index], &env_var_name, &env_var_value);
-        free(envp[index]);
-        new_env_var = malloc(strlen(name) + strlen(value) + 2);
-        sprintf(new_env_var, "%s=%s", name, value);
-        envp[index] = new_env_var;
-    }
-    else
-    {
-        if (index >= MAX_ENV_VARS)
-        {
-            write(STDOUT_FILENO, "Too many environment variables\n", 32);
-            return (1);
-        }
-        new_env_var = malloc(strlen(name) + strlen(value) + 2);
-        sprintf(new_env_var, "%s=%s", name, value);
-        envp[index + 1] = NULL;
-        envp[index] = new_env_var;
-    }
-    return (1);
+if (args[1] == NULL)
+{
+write(STDOUT_FILENO, "Usage: setenv NAME [VALUE]\n", 27);
+return (1);
+}
+name = args[1];
+if (args[2] != NULL)
+{
+value = args[2];
+}
+else
+{
+value = "";
+}
+index = find_env_var(name, envp);
+if (index >= 0)
+{
+split_env_var(envp[index], &env_var_name, &env_var_value);
+free(envp[index]);
+new_env_var = malloc(strlen(name) + strlen(value) + 2);
+sprintf(new_env_var, "%s=%s", name, value);
+envp[index] = new_env_var;
+}
+else
+{
+if (index >= MAX_ENV_VARS)
+{
+write(STDOUT_FILENO, "Too many environment variables\n", 32);
+return (1);
+}
+new_env_var = malloc(strlen(name) + strlen(value) + 2);
+sprintf(new_env_var, "%s=%s", name, value);
+envp[index + 1] = NULL;
+envp[index] = new_env_var;
+}
+return (1);
 }
 
