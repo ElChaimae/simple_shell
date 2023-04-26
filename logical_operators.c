@@ -1,5 +1,4 @@
 #include "main.h"
-#include <sys/wait.h>
 
 int execute(char **args);
 
@@ -14,16 +13,16 @@ int logical_operators(char *input)
 int status = 0;
 int next_command = 1;
 char *token = strtok(input, " ");
-char *args[100];
-int i = 0;
+char **args = NULL;
 
 while (token != NULL)
 {
-if (token[0] == '&' && token[1] == '&')
+if (strcmp(token, "&&") == 0)
 {
 next_command = (status == 0) ? 1 : 0;
 }
-else if (token[0] == '|' && token[1] == '|')
+else if
+(strcmp(token, "||") == 0)
 {
 next_command = (status != 0) ? 1 : 0;
 }
@@ -31,20 +30,13 @@ else
 {
 if (next_command)
 {
-args[i++] = token;
-args[i] = NULL;
 status = execute(args);
 next_command = 0;
-i = 0;
-}
-else
-}
-args[i++] = token;
-args[i] = NULL;
 }
 }
 token = strtok(NULL, " ");
 }
 return (status);
 }
+
 

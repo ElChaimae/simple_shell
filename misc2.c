@@ -13,46 +13,38 @@
  */
 char *get_path(char *command, char **envp)
 {
-char *path_env = NULL, char *path = NULL;
+char *command_path;
+char *path_env = NULL, *path = NULL, *dir = NULL;
 int i;
-size_t command_len = strlen(command);
-char separator[2] = "/", separator[1] = '\0';
+size_t command_len = strlen(command), dir_len = 0, path_len = 0;
+char separator[2] = { '/', '\0' };
 
-for (i = 0; envp[i] != NULL; i++)
-{
+for (i = 0; envp[i] != NULL && path_env == NULL; i++)
 if (strncmp(envp[i], "PATH=", 5) == 0)
-{
 path_env = envp[i] + 5;
-break;
-}
-}
 if (path_env != NULL)
 {
-char *dir = strtok(path_env, ":");
-while (dir != NULL)
+dir = strtok(path_env, ":");
+while (dir != NULL && path == NULL)
 {
-size_t dir_len = strlen(dir);
-size_t path_len = dir_len + command_len + 2;
-char *command_path = malloc(path_len);
+dir_len = strlen(dir);
+path_len = dir_len + command_len + 2;
+command_path = malloc(path_len);
 if (command_path == NULL)
 {
 perror("malloc");
 exit(EXIT_FAILURE);
 }
 strcpy(command_path, dir);
-write(STDOUT_FILENO, separator, 1);
-write(STDOUT_FILENO, command, command_len);
-command_path[dir_len] = '/';
-strcpy(command_path + dir_len + 1, command);
+strcat(command_path, separator);
+strcat(command_path, command);
 if (access(command_path, X_OK) == 0)
-{
 path = command_path;
-break;
-}
+else
 free(command_path);
 dir = strtok(NULL, ":");
 }
 }
-return path;
+return (path);
 }
 
