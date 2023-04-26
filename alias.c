@@ -9,19 +9,16 @@
  */
 void add_alias(alias_t **alias_list, char *name, char *value)
 {
-alias_t *new_alias;
-	
+alias_t *new_alias;	
 new_alias = malloc(sizeof(alias_t));
 if (new_alias == NULL)
 {
 write(STDERR_FILENO, "Error: failed to allocate memory for new alias.\n", 48);
 return;
 }
-    
 new_alias->name = strdup(name);
 new_alias->value = strdup(value);
-new_alias->next = *alias_list;
-    
+new_alias->next = *alias_list;   
 *alias_list = new_alias;
 }
 
@@ -55,7 +52,6 @@ void delete_alias(alias_t **alias_list, char *name)
 {
 alias_t *alias_ptr;
 alias_t *prev_ptr;
-    
 for (alias_ptr = *alias_list, prev_ptr = NULL;
 alias_ptr != NULL;
 prev_ptr = alias_ptr, alias_ptr = alias_ptr->next)
