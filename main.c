@@ -1,48 +1,45 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include "main.h"
 
-/**
- * free_tokens - Frees a double pointer array of strings
- * @tokens: Double pointer array of strings to free
- */
-void free_tokens(char **tokens)
-{
-    size_t i;
-
-    for (i = 0; tokens[i]; i++)
-        free(tokens[i]);
-
-    free(tokens);
-}
+#define BUFFER_SIZE 1024
 
 /**
- * main - Simple Shell entry point
- *
- * Return: Always 0
+ * main - entry point for the shell
+ * Return: 0
  */
 int main(void)
 {
-    char *line = NULL;
-    char **tokens = NULL;
-    size_t len = 0;
-    ssize_t read = 0;
+char buffer[BUFFER_SIZE];
+char *args[100];
+int arg_count;
+char *arg;
 
-    do {
-        printf("$ ");
-        read = getline(&line, &len, stdin);
+while (1)
+{
+printf("$ ");
+fflush(stdout);
+if (fgets(buffer, BUFFER_SIZE, stdin) == NULL)
+{
+break;
+}
 
-        if (read == -1)
-            break;
-
-        tokens = tokenize(line);
-        if (tokens == NULL)
-            continue;
-
-        execute_command(tokens);
-
-        free_tokens(tokens);
-    } while (1);
-
-    free(line);
-    return (0);
+/*Parse the user input into separate arguments*/
+arg_count = 0;
+arg = strtok(buffer, " \t\n");
+while (arg != NULL && arg_count < 99)
+{
+args[arg_count] = arg;
+arg_count++;
+arg = strtok(NULL, " \t\n");
+}
+args[arg_count] = NULL;
+/*Execute the command with the parsed arguments*/
+if (arg_count > 0)
+{
+execute_command(args);
+}
+}
+exit(EXIT_SUCCESS);
 }
 

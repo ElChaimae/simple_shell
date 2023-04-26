@@ -1,6 +1,9 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+#define MAX_INPUT_LENGTH 1024
+#define TOKEN_BUFSIZE 64
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,26 +17,46 @@
 #include <stdbool.h>
 #include <sys/stat.h>
 
-/* Function prototypes */
-char* get_command_path(char *command);
-char *_getenv(const char *name);
-void print_error(char *error_str);
-int execute_cd_command(char **tokens);
-int execute_command(char **tokens);
-int read_input(char **input_line, size_t *input_size);
-int print_prompt(void);
+/* struct for aliases */
+typedef struct alias {
+    char *name;
+    char *value;
+    struct alias *next;
+} alias_t;
+
+/* string functions */
+char *_strdup(char *str);
+int _strlen(char *s);
+int _strcmp(char *s1, char *s2);
+char *_strcpy(char *dest, char *src);
+char *_strcat(char *dest, char *src);
+char *_strchr(char *s, char c);
+
+/* token functions */
 char **tokenize(char *input);
-char *find_command(char *cmd);
-char *get_path_value(void);
-int exit_shell(void);
-char *allocate_full_path(char *path, char *cmd);
-int find_in_directory(char *dir, char *cmd, char *full_path);
-void print_env(char **args);
-char *get_path(char *command);
-int check_if_ls(char *cmd);
-int is_exit_command(char *cmd);
+void free_tokens(char **tokens);
+
+/* command functions */
+int is_exit_command(char *command);
 int is_cd_command(char **tokens);
-void print_command_not_found(char *cmd);
+int execute_command(char **args);
+void execute_cd_command(char* dir);
+char *get_command_path(char *command, char **envp);
+void print_command_not_found(char *command);
+void print_error(char *command);
+
+/* alias functions */
+alias_t *create_alias(char *name, char *value);
+void add_alias(alias_t **alias_list, char *name, char *value);
+void print_aliases(alias_t *alias_list);
+alias_t *get_alias(alias_t *alias_list, char *name);
+void free_aliases(alias_t **alias_list);
+
+/*other functions*/
+int execute_cmd(char **args);
+void handle_sigint(int sig_num);
+int exit_shell(char **args);
+
 
 #endif /* MAIN_H */
 

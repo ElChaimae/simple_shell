@@ -75,7 +75,7 @@ return (args);
 
 /**
  *  is_ls - checks if command is bin/ls
- *  @command - command entered by user
+ *  @command: command entered by user
  *  Return: 1 on success
  */
 int is_ls(char *command)
