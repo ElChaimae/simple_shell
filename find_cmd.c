@@ -2,13 +2,13 @@
 
 /**
  * get_path_value - Get the PATH environment variable.
- *
- * Return: On success, returns a pointer to the PATH environment variable.
+ * Return: On success, returns a pointer to the PATH
+ * environment variable.
  * On failure, returns NULL.
  */
 char *get_path_value(void)
 {
-char *path = _getenv("PATH");
+char *path = getenv("PATH");
 
 if (!path)
 {
@@ -23,7 +23,6 @@ return (path);
  * allocate_full_path - Allocate memory for the full path of a command.
  * @path: The PATH environment variable.
  * @cmd: The name of the command.
- *
  * Return: On success, returns a pointer to the full path of the command.
  * On failure, returns NULL.
  */
@@ -50,7 +49,6 @@ return (full_path);
  * @dir: The directory to search.
  * @cmd: The name of the command.
  * @full_path: The full path of the command.
- *
  * Return: On success, returns 1.
  * On failure, returns 0.
  */
@@ -81,7 +79,6 @@ return (0);
 /**
  * find_command - Find the full path of a command in PATH directories.
  * @cmd: The name of the command to find.
- *
  * Return: On success, returns a pointer to the full path of the command.
  * On failure, returns NULL.
  */
