@@ -73,7 +73,6 @@ args[count++] = token;
 return (args);
 }
 
-<<<<<<< HEAD
 /**
  *  is_ls - checks if command is bin/ls
  *  @command: command entered by user
@@ -93,5 +92,3 @@ return (0);
 return (command[i] == '\0' && ls[i] == '\0');
 }
 
-=======
->>>>>>> e0ebf90d78c602f2c4239fdc23fce929b0eb6aeb

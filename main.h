@@ -56,7 +56,7 @@ void free_aliases(alias_t **alias_list);
 int execute_cmd(char **args);
 void handle_sigint(int sig_num);
 int exit_shell(char **args);
-
+int execute(char **args);
 
 #endif /* MAIN_H */
 

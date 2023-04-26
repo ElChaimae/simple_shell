@@ -1,4 +1,5 @@
 #include "main.h"
+
 /**
  * cd - This function changes the current directory of the process.
  * @args: number of arguments
@@ -6,42 +7,52 @@
  */
 int cd(char **args)
 {
-char *dir = args[1];
-char cwd[PATH_MAX];
-if (dir == NULL)
-{
-dir = getenv("HOME");
-if (dir == NULL)
-{
-fprintf(stderr, "cd: no home directory found\n");
-return (1);
-}
-}
-else if (strcmp(dir, "-") == 0)
-{
-dir = getenv("OLDPWD");
-if (dir == NULL)
-{
-fprintf(stderr, "cd: no previous directory found\n");
-return (1);
-}
-printf("%s\n", dir);
-}
-if (chdir(dir) != 0)
-{
-perror("cd");
-return (1);
-}
-if (getcwd(cwd, PATH_MAX) == NULL)
-{
-perror("getcwd");
-return (1);
-}
-if (setenv("PWD", cwd, 1) != 0)
-{
-perror("setenv");
-return (1);
-}
-return (0);
+  char *dir = args[1];
+  char cwd[PATH_MAX];
+  int status = 0;
+
+  if (dir == NULL)
+  {
+    dir = getenv("HOME");
+    if (dir == NULL)
+    {
+      write(STDERR_FILENO, "cd: no home directory found\n", 28);
+      status = 1;
+    }
+  }
+  else if (strcmp(dir, "-") == 0)
+  {
+    dir = getenv("OLDPWD");
+    if (dir == NULL)
+    {
+      write(STDERR_FILENO, "cd: no previous directory found\n", 33);
+      status = 1;
+    }
+    else
+    {
+      write(STDOUT_FILENO, dir, strlen(dir));
+      write(STDOUT_FILENO, "\n", 1);
+    }
+  }
+
+  if (status != 1 && chdir(dir) != 0)
+  {
+    perror("cd");
+    status = 1;
+  }
+
+  if (status != 1 && getcwd(cwd, PATH_MAX) == NULL)
+  {
+    perror("getcwd");
+    status = 1;
+  }
+
+  if (status != 1 && setenv("PWD", cwd, 1) != 0)
+  {
+    perror("setenv");
+    status = 1;
+  }
+
+  return status;
 }
 

@@ -11,44 +11,44 @@
  */
 char *my_getline(int fd)
 {
-static char buffer[BUFFER_SIZE], line[BUFFER_SIZE];
-static int buffer_pos, buffer_len, line_pos;
-char c;
+  static char buffer[BUFFER_SIZE], line[BUFFER_SIZE];
+  static int buffer_pos, buffer_len, line_pos;
+  char c;
 
-while (1)
-{
-if (buffer_pos == buffer_len)
-{
-buffer_len = read(fd, buffer, BUFFER_SIZE);
-buffer_pos = 0;
-}
-if (buffer_len == 0)
-{
-if (line_pos > 0)
-{
-line[line_pos] = '\0'; /* add null terminator to line */
-return (line);
-}
-else
-return (NULL);
-}
-c = buffer[buffer_pos++];
-if (c == '\n')
-{
-line[line_pos] = '\0'; /* add null terminator to line */
-line_pos = 0; /* reset line position for next line */
-return (line);
-}
-else
-{
-line[line_pos++] = c;
-if (line_pos == BUFFER_SIZE)
-{
-line[line_pos] = '\0'; /* add null terminator to line */
-line_pos = 0; /* reset line position for next line */
-return (line);
-}
-}
-}
+  while (1)
+  {
+    if (buffer_pos == buffer_len)
+    {
+      buffer_len = read(fd, buffer, BUFFER_SIZE);
+      buffer_pos = 0;
+    }
+    if (buffer_len == 0)
+    {
+      if (line_pos > 0)
+      {
+        line[line_pos] = '\0'; /* add null terminator to line */
+        return (line);
+      }
+      else
+        return (NULL);
+    }
+    c = buffer[buffer_pos++];
+    if (c == '\n')
+    {
+      line[line_pos] = '\0'; /* add null terminator to line */
+      line_pos = 0; /* reset line position for next line */
+      return (line);
+    }
+    else
+    {
+      line[line_pos++] = c;
+      if (line_pos == BUFFER_SIZE)
+      {
+        line[line_pos] = '\0'; /* add null terminator to line */
+        line_pos = 0; /* reset line position for next line */
+        return (line);
+      }
+    }
+  }
 }
 

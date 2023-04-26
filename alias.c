@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include "main.h"
 
 /**
@@ -12,20 +9,20 @@
  */
 void add_alias(alias_t **alias_list, char *name, char *value)
 {
-alias_t *new_alias;
+    alias_t *new_alias;
 
-new_alias = malloc(sizeof(alias_t));
-if (new_alias == NULL)
-{
-fprintf(stderr, "Error: failed to allocate memory for new alias.\n");
-return;
-}
+    new_alias = malloc(sizeof(alias_t));
+    if (new_alias == NULL)
+    {
+        write(STDERR_FILENO, "Error: failed to allocate memory for new alias.\n", 48);
+        return;
+    }
 
-new_alias->name = strdup(name);
-new_alias->value = strdup(value);
-new_alias->next = *alias_list;
+    new_alias->name = strdup(name);
+    new_alias->value = strdup(value);
+    new_alias->next = *alias_list;
 
-*alias_list = new_alias;
+    *alias_list = new_alias;
 }
 
 /**

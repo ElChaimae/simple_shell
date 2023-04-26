@@ -84,33 +84,41 @@ return (0);
  */
 char *find_command(char *cmd)
 {
-char *path, *full_path;
+    char *path, *full_path;
+    int len;
 
-/* Get the PATH environment variable */
-path = get_path_value();
-if (!path)
-{
-return (NULL);
-}
+    /* Get the PATH environment variable */
+    path = get_path_value();
+    if (!path)
+    {
+        return (NULL);
+    }
 
-/* Allocate memory for the full path */
-full_path = allocate_full_path(path, cmd);
-if (!full_path)
-{
-free(path);
-return (NULL);
-}
+    /* Allocate memory for the full path */
+    full_path = allocate_full_path(path, cmd);
+    if (!full_path)
+    {
+        free(path);
+        return (NULL);
+    }
 
-/* Iterate through PATH directories to find the command */
-if (!find_in_directory(path, cmd, full_path))
-{
-fprintf(stderr, "%s: command not found\n", cmd);
-free(full_path);
-full_path = NULL;
-}
+    /* Iterate through PATH directories to find the command */
+    if (!find_in_directory(path, cmd, full_path))
+    {
+        char error_message[100];
+        len = _strlen(cmd);
+        _strcpy(error_message, cmd);
+        _strcpy(error_message + len, ": ");
+        len += 2;
+        _strcpy(error_message + len, "command not found\n");
+        len = _strlen(error_message);
+        write(STDERR_FILENO, error_message, len);
+        free(full_path);
+        full_path = NULL;
+    }
 
-free(path);
+    free(path);
 
-return (full_path);
+    return (full_path);
 }
 
