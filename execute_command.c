@@ -61,8 +61,8 @@ return (0);
  * custom_strcmp - Compares two strings
  * @s1: first string
  * @s2: second string
- *
- * Return: 0 if the strings are equal, otherwise the difference between the first
+ * Return: 0 if the strings are equal, otherwise the difference
+ * between the first
  * non-matching characters.
  */
 int custom_strcmp(const char *s1, const char *s2)

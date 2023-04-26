@@ -7,8 +7,7 @@
  */
 int cd(char **args)
 {
-char *dir = args[1];
-char cwd[PATH_MAX];
+char *dir = args[1], cwd[PATH_MAX];
 int status = 0;
 
 if (dir == NULL)
@@ -45,10 +44,8 @@ perror("getcwd");
 status = 1;
 }
 if (status != 1 && setenv("PWD", cwd, 1) != 0)
-{
 perror("setenv");
 status = 1;
-}
-return status;
+return (status);
 }
 
