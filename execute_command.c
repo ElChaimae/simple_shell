@@ -20,42 +20,41 @@ int custom_strcmp(const char *s1, const char *s2);
  */
 int execute_command(char **args)
 {
-    char *token;
-    int i = 0;
-    int status;
+char *token;
+int i = 0;
+int status;
 
-    token = strtok(args[0], " \n");
-    while (token != NULL)
-    {
-        args[i++] = token;
-        token = strtok(NULL, " \n");
-    }
-    args[i] = NULL;
-
-    if (custom_strcmp(args[0], "cd") == 0)
-    {
-        if (args[1] == NULL)
-            chdir(getenv("HOME"));
-        else if (chdir(args[1]) == -1)
-            perror("cd failed");
-    }
-    else
-    {
-        pid_t pid = fork();
-        if (pid == -1)
-            perror("fork failed");
-        else if (pid == 0)
-        {
-            if (execvp(args[0], args) == -1)
-                perror("execvp failed");
-        }
-        else
-        {
-            if (wait(&status) == -1)
-                perror("wait failed");
-        }
-    }
-    return (0);
+token = strtok(args[0], " \n");
+while (token != NULL)
+{
+args[i++] = token;
+token = strtok(NULL, " \n");
+}
+args[i] = NULL;
+if (custom_strcmp(args[0], "cd") == 0)
+{
+if (args[1] == NULL)
+chdir(getenv("HOME"));
+else if (chdir(args[1]) == -1)
+perror("cd failed");
+}
+else
+{
+pid_t pid = fork();
+if (pid == -1)
+perror("fork failed");
+else if (pid == 0)
+{
+if (execvp(args[0], args) == -1)
+perror("execvp failed");
+}
+else
+{
+if (wait(&status) == -1)
+perror("wait failed");
+}
+}
+return (0);
 }
 
 /**
@@ -68,11 +67,11 @@ int execute_command(char **args)
  */
 int custom_strcmp(const char *s1, const char *s2)
 {
-    while (*s1 && (*s1 == *s2))
-    {
-        s1++;
-        s2++;
-    }
-    return (*(const unsigned char *)s1 - *(const unsigned char *)s2);
+while (*s1 && (*s1 == *s2))
+{
+s1++;
+s2++;
+}
+return (*(const unsigned char *)s1 - *(const unsigned char *)s2);
 }
 
