@@ -3,18 +3,21 @@
 #include <stdlib.h>
 #include <string.h>
 
-extern char **environ;
-
+/**
+ * print_env - Print the environment variables.
+ * @args: An array of command arguments.
+ */
 void print_env(char **args)
 {
-    int i = 0;
-    while (environ[i]) {
-        printf("%s\n", environ[i]);
-        i++;
-    }
+	int i = 0;
 
-    if (strcmp(args[0], "env") == 0) {
-        printf("This is the env command\n");
-    }
+	while (environ[i])
+	{
+		printf("%s\n", environ[i]);
+		i++;
+	}
+
+	if (strcmp(args[0], "env") == 0)
+		printf("This is the env command\n");
 }
 
