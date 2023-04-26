@@ -9,7 +9,7 @@
  */
 int is_exit_command(char *command)
 {
-    return strcmp(command, "exit") == 0;
+return (strcmp(command, "exit") == 0);
 }
 
 /**
@@ -21,7 +21,7 @@ int is_exit_command(char *command)
  */
 int is_cd_command(char **tokens)
 {
-    return (strcmp(tokens[0], "cd") == 0);
+return (strcmp(tokens[0], "cd") == 0);
 }
 
 /*
@@ -31,8 +31,8 @@ int is_cd_command(char **tokens)
  */
 void print_error(char *error_str)
 {
-    write(STDERR_FILENO, "Error: ", 7);
-    write(STDERR_FILENO, error_str, strlen(error_str));
-    write(STDERR_FILENO, "\n", 1);
+write(STDERR_FILENO, "Error: ", 7);
+write(STDERR_FILENO, error_str, strlen(error_str));
+write(STDERR_FILENO, "\n", 1);
 }
 
