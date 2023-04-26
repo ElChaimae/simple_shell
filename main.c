@@ -1,27 +1,48 @@
 #include "main.h"
 
 /**
- * main - entry point for the program
- * @argc: the number of command-line arguments passed to the program
- * @argv: an array of strings containing the command-line arguments
- *
- * Return: 0 on success
+ * free_tokens - Frees a double pointer array of strings
+ * @tokens: Double pointer array of strings to free
  */
-int main(int argc __attribute__((unused)), char **argv __attribute__((unused)))
+void free_tokens(char **tokens)
 {
-	char *input = NULL;
-	size_t input_size = 0;
-	char **args = NULL;
+    size_t i;
 
-	while (1)
-	{
-		print_prompt();
-		read_input(&input, &input_size);
-		input[strcspn(input, "\n")] = '\0';
-		args = tokenize(input);
-		exec_cmd(args);
-	}
-	free(input);
+    for (i = 0; tokens[i]; i++)
+        free(tokens[i]);
 
-	return (0);
+    free(tokens);
 }
+
+/**
+ * main - Simple Shell entry point
+ *
+ * Return: Always 0
+ */
+int main(void)
+{
+    char *line = NULL;
+    char **tokens = NULL;
+    size_t len = 0;
+    ssize_t read = 0;
+
+    do {
+        printf("$ ");
+        read = getline(&line, &len, stdin);
+
+        if (read == -1)
+            break;
+
+        tokens = tokenize(line);
+        if (tokens == NULL)
+            continue;
+
+        execute_command(tokens);
+
+        free_tokens(tokens);
+    } while (1);
+
+    free(line);
+    return (0);
+}
+
