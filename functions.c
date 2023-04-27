@@ -12,8 +12,10 @@ int read_input(char **input_line, size_t *input_size)
 	int read_result = getline(input_line, input_size, stdin);
 
 	if (read_result == -1)
-	{	
-		exit(EXIT_FAILURE);
+	{
+		if (feof(stdin))
+			return (-1);
+		exit(EXIT_FAILURE);	
 	}
 	return (0);
 }
@@ -86,7 +88,7 @@ int exec_cmd(char **args)
 		return (-1);
 	}
 	if (strcmp(args[0], "exit") == 0)
-		exit(0);
+		exit(EXIT_FAILURE);
 	pid = fork();
 	if (pid == -1)
 	{
