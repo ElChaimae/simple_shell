@@ -12,8 +12,7 @@ int read_input(char **input_line, size_t *input_size)
 	int read_result = getline(input_line, input_size, stdin);
 
 	if (read_result == -1)
-	{
-		write(STDERR_FILENO, " Exit..\n", 8);
+	{	
 		exit(EXIT_FAILURE);
 	}
 	return (0);
@@ -26,13 +25,17 @@ int read_input(char **input_line, size_t *input_size)
  */
 int print_prompt(void)
 {
-	char *prompt_txt = "shell$";
-	int write_result = write(STDOUT_FILENO, prompt_txt, strlen(prompt_txt));
-
-	if (write_result == -1)
+	char *prompt_txt = "$ ";
+	int write_result; 
+	
+	if(isatty(STDIN_FILENO))
 	{
-		perror("Error writing prompt to stdout");
-		return (-1);
+		write_result = write(STDOUT_FILENO, prompt_txt, strlen(prompt_txt));
+		if (write_result == -1)
+		{
+			perror("Error writing prompt to stdout");
+			return (-1);
+		}
 	}
 	return (0);
 }
