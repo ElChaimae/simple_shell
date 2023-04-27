@@ -1,77 +1,139 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <dirent.h>
-#include <string.h>
 #include "main.h"
 
-#define BUFFER_SIZE 1024
-
-int custom_strcmp(const char *s1, const char *s2);
-
 /**
- * execute_command - Executes a given command and handles built-in "cd" command
- * @args: array of strings representing the command and its arguments
- * Return: 0 on success, otherwise error message is printed and program exits
- */
-int execute_command(char **args)
+ *  execute_left_command - handles left pipe
+ *  @args: arguments passed
+ *  @pipefd: array for creating a pipe between two processes
+ *  Return: 0
+void execute_left_command(char **args, int pipefd[])
 {
-char *token;
-int i = 0;
+pid_t pid;
 int status;
 
-token = strtok(args[0], " \n");
-while (token != NULL)
-{
-args[i++] = token;
-token = strtok(NULL, " \n");
-}
-args[i] = NULL;
-if (custom_strcmp(args[0], "cd") == 0)
-{
-if (args[1] == NULL)
-chdir(getenv("HOME"));
-else if (chdir(args[1]) == -1)
-perror("cd failed");
-}
-else
-{
-pid_t pid = fork();
+pid = fork();
 if (pid == -1)
-perror("fork failed");
+{
+perror("fork");
+exit(EXIT_FAILURE);
+} 
 else if (pid == 0)
 {
-if (execvp(args[0], args) == -1)
-perror("execvp failed");
+/*Set up pipe*/
+close(pipefd[0]);
+dup2(pipefd[1], STDOUT_FILENO);
+close(pipefd[1]);
+
+/*Execute command*/
+execute_child(args);
 }
-else
-{
-if (wait(&status) == -1)
-perror("wait failed");
-}
-}
-return (0);
+/* Close pipe write end*/
+close(pipefd[1]);
+/*Wait for child process to finish*/
+wait_for_child(pid, &status);
 }
 
 /**
- * custom_strcmp - Compares two strings
- * @s1: first string
- * @s2: second string
- * Return: 0 if the strings are equal, otherwise the difference
- * between the first
- * non-matching characters.
+ * execute_right_command - handles right pipe
+ * @args: arguments
+ * @pipefd: array for creating a pipe between two processes
+ * Return: nothing
  */
-int custom_strcmp(const char *s1, const char *s2)
+void execute_right_command(char **args, int pipefd[])
 {
-while (*s1 && (*s1 == *s2))
+pid_t pid;
+int status;
+
+pid = fork();
+if (pid == -1)
 {
-s1++;
-s2++;
+perror("fork");
+exit(EXIT_FAILURE);
 }
-return (*(const unsigned char *)s1 - *(const unsigned char *)s2);
+else if (pid == 0)
+{
+/*Set up pipe*/
+close(pipefd[1]);
+dup2(pipefd[0], STDIN_FILENO);
+close(pipefd[0]);
+/*Execute command*/
+execute_child(args);
+}
+/* Close pipe read end*/
+close(pipefd[0]);
+/* Wait for child process to finish*/
+wait_for_child(pid, &status);
+}
+
+/**
+ * check_for_pipe - checks if command is pipe
+ * @args: arguments passed
+ * Return: 0
+ */
+int check_for_pipe(char **args)
+{
+for (int i = 0; args[i] != NULL; i++)
+{
+if (strcmp(args[i], "|") == 0)
+{
+return (i);
+}
+}
+return (-1);
+}
+
+/**
+ * execute_single_command - executes a single command
+ * @args: arguments passed
+ * Return: nothing
+ */
+void execute_single_command(char **args)
+{
+pid_t pid;
+int status;
+
+pid = fork();
+if (pid == -1)
+{
+perror("fork");
+exit(EXIT_FAILURE);
+}
+else if (pid == 0)
+{
+/*Execute command*/
+execute_child(args);
+}
+/*Wait for child process to finish*/
+wait_for_child(pid, &status);
+}
+
+/**
+ * execute_command - executes a command
+ * @args: arguments passed
+ * Return: 0
+ */
+ int execute_command(char **args)
+{
+int pipe_index = check_for_pipe(args);
+if (pipe_index == -1)
+{
+/*No pipe found, execute single command*/
+execute_single_command(args);
+}
+else
+{
+/*Pipe found, execute left and right commands*/
+int pipefd[2];
+if (pipe(pipefd) == -1)
+{
+perror("pipe");
+return (0);
+}
+/ *Execute left command*/
+args[pipe_index] = NULL;
+execute_left_command(args, pipefd);
+/*Execute right command*/
+execute_right_command(&args[pipe_index+1], pipefd);
+}
+return (1);
 }
 
