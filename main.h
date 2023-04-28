@@ -12,6 +12,6 @@ extern char **environ;
 int read_input(char **input_line, size_t *input_size);
 int print_prompt(void);
 char** tokenize(char *input);
-int exec_cmd(char **args);
+int exec_cmd(char **args, int *pipefd);
 
 #endif

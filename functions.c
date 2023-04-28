@@ -61,11 +61,6 @@ int print_prompt(void)
  */
 char **tokenize(char *input)
 {
-    if (!input)
-    {
-        fprintf(stderr, "Invalid input\n");
-        exit(EXIT_FAILURE);
-    }
     int bufsize = TOKEN_BUFSIZE;
     char **tokens = malloc(bufsize * sizeof(char *));
     char *token;
@@ -80,7 +75,7 @@ char **tokenize(char *input)
     token = strtok(input, TOKEN_DELIM);
     while (token != NULL)
     {
-        tokens[pos] = token;
+        tokens[pos] = strdup(token);
         pos++;
 
         if (pos >= bufsize)
@@ -96,7 +91,9 @@ char **tokenize(char *input)
 
         token = strtok(NULL, TOKEN_DELIM);
     }
+
     tokens[pos] = NULL;
+    free(token);
     return tokens;
 }
 
@@ -141,19 +138,13 @@ int exec_cmd(char **args, int *pipefd)
     }
     else if (pid == 0)
     {
-        // Child process
-
-        // Check if there is input from a pipe
         if (pipefd[0] != -1)
         {
-            // Redirect stdin to pipe
             if (dup2(pipefd[0], STDIN_FILENO) == -1)
             {
                 perror("Dup2 error");
                 exit(EXIT_FAILURE);
             }
-
-            // Close read end of pipe
             if (close(pipefd[0]) == -1)
             {
                 perror("Close error");
@@ -161,17 +152,13 @@ int exec_cmd(char **args, int *pipefd)
             }
         }
 
-        // Check if there is output to a pipe
         if (pipefd[1] != -1)
         {
-            // Redirect stdout to pipe
             if (dup2(pipefd[1], STDOUT_FILENO) == -1)
             {
                 perror("Dup2 error");
                 exit(EXIT_FAILURE);
             }
-
-            // Close write end of pipe
             if (close(pipefd[1]) == -1)
             {
                 perror("Close error");
@@ -187,9 +174,6 @@ int exec_cmd(char **args, int *pipefd)
     }
     else
     {
-        // Parent process
-
-        // Close unused ends of pipe
         if (pipefd[0] != -1)
         {
             if (close(pipefd[0]) == -1)
@@ -207,8 +191,6 @@ int exec_cmd(char **args, int *pipefd)
                 return (-1);
             }
         }
-
-        // Wait for child process to finish
         do
         {
             if (waitpid(pid, &status, WUNTRACED) == -1)
