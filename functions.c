@@ -6,6 +6,8 @@
 
 #define TOKEN_BUFSIZE 64
 #define TOKEN_DELIM " \t\r\n\a"
+#define READ_END 0
+#define WRITE_END 1
 
 /**
  * read_input - Reads a line of input from stdin and stores it in memory.
@@ -58,6 +60,11 @@ int print_prompt(void)
  */
 char **tokenize(char *input)
 {
+    if (!input)
+    {
+        fprintf(stderr, "Invalid input\n");
+        exit(EXIT_FAILURE);
+    }
     int bufsize = TOKEN_BUFSIZE;
     char **tokens = malloc(bufsize * sizeof(char *));
     char *token;
@@ -93,22 +100,38 @@ char **tokenize(char *input)
 }
 
 /**
- * exec_cmd - Execute a command with given arguments using execve.
+ * exec_cmd - Execute a command with given arguments using execvp.
  * @args: The arguments for the command to be executed.
+ * @pipefd: A file descriptor array for pipes.
  *
  * Return: On success, returns 0. On failure, returns -1.
  */
-int exec_cmd(char **args)
+int exec_cmd(char **args, int *pipefd)
 {
     pid_t pid;
     int status;
 
-    if (!*args || !args[0])
+    if (!args || !args[0])
     {
         return (-1);
     }
     if (strcmp(args[0], "exit") == 0)
+    {
         exit(EXIT_SUCCESS);
+    }
+    else if (strcmp(args[0], "cd") == 0)
+    {
+        if (args[1] == NULL)
+        {
+            fprintf(stderr, "cd: expected argument to \"cd\"\n");
+        }
+        else if (chdir(args[1]) != 0)
+        {
+            perror("cd error");
+        }
+        return (0);
+    }
+
     pid = fork();
     if (pid == -1)
     {
@@ -117,6 +140,44 @@ int exec_cmd(char **args)
     }
     else if (pid == 0)
     {
+        // Child process
+
+        // Check if there is input from a pipe
+        if (pipefd[0] != -1)
+        {
+            // Redirect stdin to pipe
+            if (dup2(pipefd[0], STDIN_FILENO) == -1)
+            {
+                perror("Dup2 error");
+                exit(EXIT_FAILURE);
+            }
+
+            // Close read end of pipe
+            if (close(pipefd[0]) == -1)
+            {
+                perror("Close error");
+                exit(EXIT_FAILURE);
+            }
+        }
+
+        // Check if there is output to a pipe
+        if (pipefd[1] != -1)
+        {
+            // Redirect stdout to pipe
+            if (dup2(pipefd[1], STDOUT_FILENO) == -1)
+            {
+                perror("Dup2 error");
+                exit(EXIT_FAILURE);
+            }
+
+            // Close write end of pipe
+            if (close(pipefd[1]) == -1)
+            {
+                perror("Close error");
+                exit(EXIT_FAILURE);
+            }
+        }
+
         if (execvp(args[0], args) == -1)
         {
             perror("Exec error");
@@ -125,10 +186,38 @@ int exec_cmd(char **args)
     }
     else
     {
+        // Parent process
+
+        // Close unused ends of pipe
+        if (pipefd[0] != -1)
+        {
+            if (close(pipefd[0]) == -1)
+            {
+                perror("Close error");
+                return (-1);
+            }
+        }
+
+        if (pipefd[1] != -1)
+        {
+            if (close(pipefd[1]) == -1)
+            {
+                perror("Close error");
+                return (-1);
+            }
+        }
+
+        // Wait for child process to finish
         do
         {
-            waitpid(pid, &status, WUNTRACED);
+            if (waitpid(pid, &status, WUNTRACED) == -1)
+            {
+                perror("Wait error");
+                return (-1);
+            }
         } while (!WIFEXITED(status) && !WIFSIGNALED(status));
     }
     return (0);
 }
+
+
