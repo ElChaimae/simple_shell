@@ -21,6 +21,7 @@ int main(int argc __attribute__((unused)), char **argv __attribute__((unused)))
 		input[strcspn(input, "\n")] = '\0';
 		args = tokenize(input);
 		exec_cmd(args);
+		free(args);
 	}
 	free(input);
 
