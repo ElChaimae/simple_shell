@@ -20,7 +20,7 @@ if (pid == -1)
 {
 perror("fork");
 exit(EXIT_FAILURE);
-} 
+}
 else if (pid == 0)
 {
 /*Set up pipe*/

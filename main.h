@@ -19,11 +19,18 @@ extern char **environ;
 #include <stdbool.h>
 #include <sys/stat.h>
 
-/* struct for aliases */
-typedef struct alias {
-    char *name;
-    char *value;
-    struct alias *next;
+/**
+ * struct alias - struct for aliases
+ * @name: alias name
+ * @value: alais value
+ * @next: next
+ * Return: nothing
+ */
+typedef struct alias
+{
+char *name;
+char *value;
+struct alias *next;
 } alias_t;
 
 /* string functions */
@@ -42,7 +49,7 @@ void free_tokens(char **tokens);
 int is_exit_command(char *command);
 int is_cd_command(char **tokens);
 int execute_command(char **args);
-void execute_cd_command(char* dir);
+void execute_cd_command(char *dir);
 char *get_command_path(char *command, char **envp);
 void print_command_not_found(char *command);
 void print_error(char *command);
@@ -61,7 +68,7 @@ int exit_shell(char **args);
 int execute(char **args);
 int read_input(char **input_line, size_t *input_size);
 int print_prompt(void);
-char** tokenize(char *input);
+char **tokenize(char *input);
 int exec_cmd(char **args, int *pipefd);
 void execute_child(char **args);
 void wait_for_child(pid_t pid, int *status);
