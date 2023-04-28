@@ -1,119 +1,206 @@
+#include "main.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
-#include <errno.h>
 
-#define MAX_COMMAND_LENGTH 100
-#define MAX_ARGUMENTS 10
-#define PROMPT "> "
+#define TOKEN_BUFSIZE 64
+#define TOKEN_DELIM " \t\r\n\a"
+#define READ_END 0
+#define WRITE_END 1
 
-char *get_command_path(char *command)
+/**
+ * read_input - Reads a line of input from stdin and stores it in memory.
+ * @input_line: Pointer to a pointer to a character
+ * @input_size: Pointer to a size_t
+ *
+ * Return: On success, 0. On failure, -1.
+ */
+int read_input(char **input_line, size_t *input_size)
 {
-    char *path = getenv("PATH");
-    char *token;
-    char *path_component;
-    char *command_path = NULL;
-    int found_command = 0;
+    ssize_t read_result = getline(input_line, input_size, stdin);
 
-    if (path == NULL)
-        return NULL;
-
-    path = strdup(path);
-    if (path == NULL)
-        return NULL;
-
-    token = strtok(path, ":");
-    while (token != NULL && !found_command)
+    if (read_result == -1)
     {
-        path_component = malloc(strlen(token) + strlen(command) + 2);
-        if (path_component == NULL) {
-            free(path);
-            return NULL;
-        }
-        sprintf(path_component, "%s/%s", token, command);
-        if (access(path_component, F_OK) == 0)
-        {
-            command_path = path_component;
-            found_command = 1;
-        }
-        else {
-            free(path_component);
-        }
-        token = strtok(NULL, ":");
+        if (feof(stdin))
+            return (-1);
+        perror("Error reading input");
+        exit(EXIT_FAILURE);
     }
-
-    free(path);
-    if (!found_command) {
-        return NULL;
-    }
-    return command_path;
+    return (0);
 }
 
-int execute_command(char *command)
+/**
+ * print_prompt - Writes a prompt string to stdout.
+ *
+ * Return: On success, returns 0. On failure, returns -1.
+ */
+int print_prompt(void)
 {
-    int argc = 0;
-    char *args[MAX_ARGUMENTS + 2]; /* +2 for command and NULL terminator*/
+    char *prompt_txt = "$ ";
+    ssize_t write_result;
+
+    if (isatty(STDOUT_FILENO))
+    {
+        write_result = write(STDOUT_FILENO, prompt_txt, strlen(prompt_txt));
+        if (write_result == -1)
+        {
+            perror("Error writing prompt to stdout");
+            return (-1);
+        }
+    }
+    return (0);
+}
+
+/**
+ * tokenize - splits a string into an array of tokens separated by whitespace
+ * @input: the string to tokenize
+ *
+ * Return: an array of strings representing the tokens in the input string
+ */
+char **tokenize(char *input)
+{
+    int bufsize = TOKEN_BUFSIZE;
+    char **tokens = malloc(bufsize * sizeof(char *));
     char *token;
-    char *command_path;
+    int pos = 0;
+
+    if (!tokens)
+    {
+        fprintf(stderr, "Allocation error\n");
+        exit(EXIT_FAILURE);
+    }
+
+    token = strtok(input, TOKEN_DELIM);
+    while (token != NULL)
+    {
+        tokens[pos] = strdup(token);
+        pos++;
+
+        if (pos >= bufsize)
+        {
+            bufsize += TOKEN_BUFSIZE;
+            tokens = realloc(tokens, bufsize * sizeof(char *));
+            if (!tokens)
+            {
+                fprintf(stderr, "Allocation error\n");
+                exit(EXIT_FAILURE);
+            }
+        }
+
+        token = strtok(NULL, TOKEN_DELIM);
+    }
+
+    tokens[pos] = NULL;
+    free(token);
+    return tokens;
+}
+
+/**
+ * exec_cmd - Execute a command with given arguments using execvp.
+ * @args: The arguments for the command to be executed.
+ * @pipefd: A file descriptor array for pipes.
+ *
+ * Return: On success, returns 0. On failure, returns -1.
+ */
+int exec_cmd(char **args, int *pipefd)
+{
     pid_t pid;
     int status;
 
-    token = strtok(command, " \t\n");
-    while (token != NULL && argc < MAX_ARGUMENTS)
+    if (!args || !args[0])
     {
-        args[argc] = token;
-        argc++;
-        token = strtok(NULL, " \t\n");
+        return (-1);
     }
-    args[argc] = NULL;
-
-    if (argc == 0)
-        return 0;
-
-    command_path = get_command_path(args[0]);
-    if (command_path == NULL)
+    if (strcmp(args[0], "exit") == 0)
     {
-        printf("%s: command not found\n", args[0]);
-        return 0;
+        exit(EXIT_SUCCESS);
+    }
+    else if (strcmp(args[0], "cd") == 0)
+    {
+        if (args[1] == NULL)
+        {
+            fprintf(stderr, "cd: expected argument to \"cd\"\n");
+        }
+        else if (chdir(args[1]) != 0)
+        {
+            perror("cd error");
+        }
+        return (0);
     }
 
     pid = fork();
     if (pid == -1)
     {
-        perror("Error forking process");
-        free(command_path);
-        return -1;
+        perror("Fork error");
+        return (-1);
     }
     else if (pid == 0)
     {
-        /* Child process */
-        if (execv(command_path, args) == -1)
+        if (pipefd[0] != -1)
         {
-            perror("Error executing command");
-            free(command_path);
+            if (dup2(pipefd[0], STDIN_FILENO) == -1)
+            {
+                perror("Dup2 error");
+                exit(EXIT_FAILURE);
+            }
+            if (close(pipefd[0]) == -1)
+            {
+                perror("Close error");
+                exit(EXIT_FAILURE);
+            }
+        }
+
+        if (pipefd[1] != -1)
+        {
+            if (dup2(pipefd[1], STDOUT_FILENO) == -1)
+            {
+                perror("Dup2 error");
+                exit(EXIT_FAILURE);
+            }
+            if (close(pipefd[1]) == -1)
+            {
+                perror("Close error");
+                exit(EXIT_FAILURE);
+            }
+        }
+
+        if (execvp(args[0], args) == -1)
+        {
+            perror("Exec error");
             exit(EXIT_FAILURE);
         }
-        free(command_path);
-        exit(EXIT_SUCCESS);
     }
     else
     {
-        /* Parent process */
+        if (pipefd[0] != -1)
+        {
+            if (close(pipefd[0]) == -1)
+            {
+                perror("Close error");
+                return (-1);
+            }
+        }
+
+        if (pipefd[1] != -1)
+        {
+            if (close(pipefd[1]) == -1)
+            {
+                perror("Close error");
+                return (-1);
+            }
+        }
         do
         {
             if (waitpid(pid, &status, WUNTRACED) == -1)
             {
-                if (errno == EINTR)
-                    continue;
-                perror("Error waiting for child process");
-                free(command_path);
-                return -1;
+                perror("Wait error");
+                return (-1);
             }
         } while (!WIFEXITED(status) && !WIFSIGNALED(status));
     }
-
-    free(command_path);
-    return 0;
+    return (0);
 }
+
+
