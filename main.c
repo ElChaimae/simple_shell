@@ -1,4 +1,5 @@
 #include "main.h"
+#define MAX_COMMAND_LENGTH 100
 
 /**
  * main - entry point for the program
@@ -6,24 +7,24 @@
  * @argv: an array of strings containing the command-line arguments
  * Return: 0 on success
  */
-int main(int argc __attribute__((unused)), char **argv __attribute__((unused)))
-{
-char *input = NULL;
-size_t input_size = 0;
-char **args = NULL;
-int pipefd[2] = {-1, -1};
-
-while (1)
-{
-print_prompt();
-if (read_input(&input, &input_size) == -1)
-break;
-input[strcspn(input, "\n")] = '\0';
-args = tokenize(input);
-exec_cmd(args, pipefd);
-free(args);
+void execute_command(char *command) {
+system(command);
 }
-free(input);
-return (0);
+
+int main() {
+    char command[MAX_COMMAND_LENGTH];
+    while (1) {
+        printf(">");
+        fflush(stdout);
+        if (fgets(command, MAX_COMMAND_LENGTH, stdin) == NULL) {
+            break;
+        }
+        size_t command_len = strlen(command);
+        if (command_len > 0 && command[command_len - 1] == '\n') {
+            command[command_len - 1] = '\0';
+        }
+        execute_command(command);
+    }
+    return 0;
 }
 
