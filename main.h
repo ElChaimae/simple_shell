@@ -48,7 +48,6 @@ void free_tokens(char **tokens);
 /* command functions */
 int is_exit_command(char *command);
 int is_cd_command(char **tokens);
-int execute_command(char **args);
 void execute_cd_command(char *dir);
 char *get_command_path(char *command, char **envp);
 void print_command_not_found(char *command);

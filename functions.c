@@ -2,77 +2,100 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/wait.h>
+#include <errno.h>
 
-#define BUFFER_SIZE 1024
+#define MAX_COMMAND_LENGTH 100
+#define MAX_ARGUMENTS 10
+#define PROMPT "> "
 
-/**
- * read_input - Reads a line of input from stdin and stores it in memory.
- * @input_line: Pointer to a pointer to a character
- * @input_size: Pointer to a size_t
- *
- * Return: On success, 0. On failure, -1.
- */
-int read_input(char **input_line, size_t *input_size)
+char *get_command_path(char *command)
 {
-    ssize_t read_result = getline(input_line, input_size, stdin);
+    char *path = getenv("PATH");
+    char *token;
+    char *path_component;
+    char *command_path = NULL;
+    int found_command = 0;
 
-    if (read_result == -1)
+    if (path == NULL)
+        return NULL;
+
+    path = strdup(path);
+    if (path == NULL)
+        return NULL;
+
+    token = strtok(path, ":");
+    while (token != NULL && !found_command)
     {
-        if (feof(stdin))
-            return (-1);
-        perror("Error reading input");
-        exit(EXIT_FAILURE);
-    }
-    return (0);
-}
-
-/**
- * print_prompt - Writes a prompt string to stdout.
- *
- * Return: On success, returns 0. On failure, returns -1.
- */
-int print_prompt(void)
-{
-    char *prompt_txt = "#cisfun$ ";
-    ssize_t write_result;
-
-    if (isatty(STDOUT_FILENO))
-    {
-        write_result = write(STDOUT_FILENO, prompt_txt, strlen(prompt_txt));
-        if (write_result == -1)
-        {
-            perror("Error writing prompt to stdout");
-            return (-1);
+        path_component = malloc(strlen(token) + strlen(command) + 2);
+        if (path_component == NULL) {
+            free(path);
+            return NULL;
         }
+        sprintf(path_component, "%s/%s", token, command);
+        if (access(path_component, F_OK) == 0)
+        {
+            command_path = path_component;
+            found_command = 1;
+        }
+        else {
+            free(path_component);
+        }
+        token = strtok(NULL, ":");
     }
-    return (0);
+
+    free(path);
+    if (!found_command) {
+        return NULL;
+    }
+    return command_path;
 }
 
-/**
- * exec_cmd - Execute a command with given arguments using execvp.
- * @args: The arguments for the command to be executed.
- *
- * Return: On success, returns 0. On failure, returns -1.
- */
-int exec_cmd(char **args)
+int execute_command(char *command)
 {
+    int argc = 0;
+    char *args[MAX_ARGUMENTS + 2]; /* +2 for command and NULL terminator*/
+    char *token;
+    char *command_path;
     pid_t pid;
     int status;
+
+    token = strtok(command, " \t\n");
+    while (token != NULL && argc < MAX_ARGUMENTS)
+    {
+        args[argc] = token;
+        argc++;
+        token = strtok(NULL, " \t\n");
+    }
+    args[argc] = NULL;
+
+    if (argc == 0)
+        return 0;
+
+    command_path = get_command_path(args[0]);
+    if (command_path == NULL)
+    {
+        printf("%s: command not found\n", args[0]);
+        return 0;
+    }
 
     pid = fork();
     if (pid == -1)
     {
         perror("Error forking process");
-        return (-1);
+        free(command_path);
+        return -1;
     }
     else if (pid == 0)
     {
         /* Child process */
-        if (execvp(args[0], args) == -1)
+        if (execv(command_path, args) == -1)
         {
             perror("Error executing command");
+            free(command_path);
             exit(EXIT_FAILURE);
         }
+        free(command_path);
         exit(EXIT_SUCCESS);
     }
     else
@@ -82,10 +105,15 @@ int exec_cmd(char **args)
         {
             if (waitpid(pid, &status, WUNTRACED) == -1)
             {
+                if (errno == EINTR)
+                    continue;
                 perror("Error waiting for child process");
-                return (-1);
+                free(command_path);
+                return -1;
             }
         } while (!WIFEXITED(status) && !WIFSIGNALED(status));
     }
-    return (0);
+
+    free(command_path);
+    return 0;
 }
