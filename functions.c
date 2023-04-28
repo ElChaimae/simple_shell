@@ -1,4 +1,7 @@
 #include "main.h"
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
 
 /**
  * read_input - Reads a line of input from stdin and stores it in memory.
@@ -9,14 +12,14 @@
  */
 int read_input(char **input_line, size_t *input_size)
 {
-int read_result = getline(input_line, input_size, stdin);
+    int read_result = getline(input_line, input_size, stdin);
 
-if (read_result == -1)
-{
-write(STDERR_FILENO, " Exit..\n", 8);
-exit(EXIT_FAILURE);
-}
-return (0);
+    if (read_result == -1)
+    {
+        write(STDERR_FILENO, "\n", 1);
+        exit(EXIT_SUCCESS);
+    }
+    return (0);
 }
 
 /**
@@ -26,15 +29,16 @@ return (0);
  */
 int print_prompt(void)
 {
-char *prompt_txt = "shell$";
-int write_result = write(STDOUT_FILENO, prompt_txt, strlen(prompt_txt));
+    char *prompt_txt = "shell$ ";
+    int write_result = write(STDOUT_FILENO, prompt_txt, strlen(prompt_txt));
 
-if (write_result == -1)
-{
-perror("Error writing prompt to stdout");
-return (-1);
-}
-return (0);
+    if (write_result == -1)
+    {
+        char *error_msg = "Error writing prompt to stdout\n";
+        write(STDERR_FILENO, error_msg, strlen(error_msg));
+        return (-1);
+    }
+    return (0);
 }
 
 /**
@@ -45,50 +49,71 @@ return (0);
  */
 char **tokenize(char *input)
 {
-int bufferSize = 10;
-char **args = malloc(bufferSize * sizeof(char *));
-char *token;
-int count = 0;
-char **temp;
-token = strtok(input, " ");
-args[count++] = token;
+    const char *delimiter = " \t\n\r\'\"`\\*&#";
+    char **args = malloc(sizeof(char *) * MAX_ARGS);
+    char *token;
+    int i = 0;
 
-while (token != NULL)
-{
-if (count >= bufferSize)
-{
-bufferSize *= 2;
-temp = realloc(args, bufferSize *sizeof(char *));
-if (!temp)
-{
-perror("Error reallocating memory");
-free(args);
-return (NULL);
-}
-args = temp;
-}
-token = strtok(NULL, " ");
-args[count++] = token;
-}
-return (args);
+    if (args == NULL)
+        return (NULL);
+
+    token = strtok(input, delimiter);
+    while (token != NULL && i < MAX_ARGS - 1)
+    {
+        args[i] = token;
+        token = strtok(NULL, delimiter);
+        i++;
+    }
+    args[i] = NULL;
+
+    return (args);
 }
 
 /**
- *  is_ls - checks if command is bin/ls
- *  @command: command entered by user
- *  Return: 1 on success
+ * builtin_cd - changes the current working directory of the process
+ * @args: an array of arguments passed to the cd command
+ *
+ * Return: always returns 0
  */
-int is_ls(char *command)
+int builtin_cd(char **args)
 {
-char *ls = "/bin/ls";
-int i;
-
-for (i = 0; command[i] && ls[i]; i++)
-{
-if (command[i] != ls[i])
-return (0);
+    if (args[1] == NULL)
+    {
+        char *error_msg = "Error: expected argument to \"cd\"\n";
+        write(STDERR_FILENO, error_msg, strlen(error_msg));
+    }
+    else
+    {
+        if (chdir(args[1]) != 0)
+        {
+            perror("cd");
+        }
+    }
+    return (0);
 }
 
-return (command[i] == '\0' && ls[i] == '\0');
+/**
+ * builtin_help - displays help information for the shell
+ * @args: an array of arguments passed to the help command
+ *
+ * Return: always returns 0
+ */
+int builtin_help(char **args __attribute__((unused)))
+{
+    char *help_str = "Simple Shell\n"
+                     "Type program names and arguments, and hit enter.\n"
+                     "The following are built in:\n"
+                     "  cd\n"
+                     "  help\n"
+                     "  exit\n"
+                     "Use the man command for information on other programs.\n";
+    int write_result = write(STDOUT_FILENO, help_str, strlen(help_str));
+
+    if (write_result == -1)
+    {
+        perror("Error writing help to stdout");
+        return (-1);
+    }
+    return (0);
 }
 

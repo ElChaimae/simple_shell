@@ -1,62 +1,74 @@
+#include "main.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <signal.h>
-#include <string.h>
-#include "main.h"
+#include <errno.h>
 
-#define BUFFER_SIZE 1024
+#define MAX_ARGS 100
 
 /**
- * main - entry point for the shell
- * Return: 0
+ * main - Entry point.
+ * @argc: The number of arguments passed.
+ * @argv: An array of pointers to the arguments.
+ * @env: An array of pointers to the environment variables.
+ *
+ * Return: 0 on success, 1 otherwise.
  */
-int main(void)
+int main(int argc __attribute__((unused)), char **argv __attribute__((unused)), char **env)
 {
-char buffer[BUFFER_SIZE];
-char *args[100];
-int arg_count;
-char *arg;
-/* Register signal handler*/
-signal(SIGINT, handle_sigint);
-/* Set the PATH environment variable */
-printf("PATH set successfully\n");
-while (1)
-{
-if (write(STDOUT_FILENO, "$ ", 2) == -1)
-{
-perror("write");
-exit(EXIT_FAILURE);
-}
-if (fgets(buffer, BUFFER_SIZE, stdin) == NULL)
-{
-break;
-}
-/*Parse the user input into separate arguments*/
-arg_count = 0;
-arg = strtok(buffer, " \t\n");
-while (arg != NULL && arg_count < 99)
-{
-args[arg_count] = arg;
-arg_count++;
-arg = strtok(NULL, " \t\n");
-}
-args[arg_count] = NULL;
-/*Execute the command with the parsed arguments*/
-if (arg_count > 0)
-{
-execute_command(args);
-}
-}
-exit(EXIT_SUCCESS);
-}
-/**
- * handle_sigint - a function that handles the SIGINT signal
- */
-void handle_sigint(int sig_num)
-{
-(void) sig_num;
-fflush(stdout);
-write(STDOUT_FILENO, "\n$ ", 3);
+    char **args, *error_message;
+    int ret;
+    size_t n = 0;
+    ssize_t nread;
+    int i = 0;
+    char *line, *token;
+    signal(SIGINT, SIG_IGN);
+
+    while (1)
+    {
+        line = NULL;
+        nread = getline(&line, &n, stdin);
+        if (nread == -1) {
+            free(line);
+            continue;
+        }
+        if (strcmp(line, "\n") == 0) {
+            free(line);
+            continue;
+        }
+        args = malloc(sizeof(char *) * MAX_ARGS);
+        if (!args) {
+            free(line);
+            continue;
+        }
+        token = strtok(line, " ");
+        while (token != NULL && i < MAX_ARGS - 1)
+        {
+            args[i++] = token;
+            token = strtok(NULL, " ");
+        }
+        args[i] = NULL;
+        free(line);
+        if (i == 0) {
+            free(args);
+            continue;
+        }
+
+        errno = 0;  /* Clear any previous error*/
+        ret = execute(args, env);
+        free(args);
+
+        if (ret != EXIT_SUCCESS)
+        {
+            error_message = strerror(errno);
+            fprintf(stderr, "%s\n", error_message);
+            if (errno == ENOMEM) {
+                exit(EXIT_FAILURE);
+            }
+        }
+    }
+    return EXIT_SUCCESS;
 }
 
