@@ -1,14 +1,9 @@
-#include "main.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/wait.h>
 
-#define TOKEN_BUFSIZE 64
-#define TOKEN_DELIM " \t\r\n\a"
-#define READ_END 0
-#define WRITE_END 1
+#define BUFFER_SIZE 1024
 
 /**
  * read_input - Reads a line of input from stdin and stores it in memory.
@@ -38,7 +33,7 @@ int read_input(char **input_line, size_t *input_size)
  */
 int print_prompt(void)
 {
-    char *prompt_txt = "$ ";
+    char *prompt_txt = "#cisfun$ ";
     ssize_t write_result;
 
     if (isatty(STDOUT_FILENO))
@@ -54,153 +49,43 @@ int print_prompt(void)
 }
 
 /**
- * tokenize - splits a string into an array of tokens separated by whitespace
- * @input: the string to tokenize
- *
- * Return: an array of strings representing the tokens in the input string
- */
-char **tokenize(char *input)
-{
-    int bufsize = TOKEN_BUFSIZE;
-    char **tokens = malloc(bufsize * sizeof(char *));
-    char *token;
-    int pos = 0;
-
-    if (!tokens)
-    {
-        fprintf(stderr, "Allocation error\n");
-        exit(EXIT_FAILURE);
-    }
-
-    token = strtok(input, TOKEN_DELIM);
-    while (token != NULL)
-    {
-        tokens[pos] = strdup(token);
-        pos++;
-
-        if (pos >= bufsize)
-        {
-            bufsize += TOKEN_BUFSIZE;
-            tokens = realloc(tokens, bufsize * sizeof(char *));
-            if (!tokens)
-            {
-                fprintf(stderr, "Allocation error\n");
-                exit(EXIT_FAILURE);
-            }
-        }
-
-        token = strtok(NULL, TOKEN_DELIM);
-    }
-
-    tokens[pos] = NULL;
-    free(token);
-    return tokens;
-}
-
-/**
  * exec_cmd - Execute a command with given arguments using execvp.
  * @args: The arguments for the command to be executed.
- * @pipefd: A file descriptor array for pipes.
  *
  * Return: On success, returns 0. On failure, returns -1.
  */
-int exec_cmd(char **args, int *pipefd)
+int exec_cmd(char **args)
 {
     pid_t pid;
     int status;
 
-    if (!args || !args[0])
-    {
-        return (-1);
-    }
-    if (strcmp(args[0], "exit") == 0)
-    {
-        exit(EXIT_SUCCESS);
-    }
-    else if (strcmp(args[0], "cd") == 0)
-    {
-        if (args[1] == NULL)
-        {
-            fprintf(stderr, "cd: expected argument to \"cd\"\n");
-        }
-        else if (chdir(args[1]) != 0)
-        {
-            perror("cd error");
-        }
-        return (0);
-    }
-
     pid = fork();
     if (pid == -1)
     {
-        perror("Fork error");
+        perror("Error forking process");
         return (-1);
     }
     else if (pid == 0)
     {
-        if (pipefd[0] != -1)
-        {
-            if (dup2(pipefd[0], STDIN_FILENO) == -1)
-            {
-                perror("Dup2 error");
-                exit(EXIT_FAILURE);
-            }
-            if (close(pipefd[0]) == -1)
-            {
-                perror("Close error");
-                exit(EXIT_FAILURE);
-            }
-        }
-
-        if (pipefd[1] != -1)
-        {
-            if (dup2(pipefd[1], STDOUT_FILENO) == -1)
-            {
-                perror("Dup2 error");
-                exit(EXIT_FAILURE);
-            }
-            if (close(pipefd[1]) == -1)
-            {
-                perror("Close error");
-                exit(EXIT_FAILURE);
-            }
-        }
-
+        /* Child process */
         if (execvp(args[0], args) == -1)
         {
-            perror("Exec error");
+            perror("Error executing command");
             exit(EXIT_FAILURE);
         }
+        exit(EXIT_SUCCESS);
     }
     else
     {
-        if (pipefd[0] != -1)
-        {
-            if (close(pipefd[0]) == -1)
-            {
-                perror("Close error");
-                return (-1);
-            }
-        }
-
-        if (pipefd[1] != -1)
-        {
-            if (close(pipefd[1]) == -1)
-            {
-                perror("Close error");
-                return (-1);
-            }
-        }
+        /* Parent process */
         do
         {
             if (waitpid(pid, &status, WUNTRACED) == -1)
             {
-                perror("Wait error");
+                perror("Error waiting for child process");
                 return (-1);
             }
         } while (!WIFEXITED(status) && !WIFSIGNALED(status));
     }
     return (0);
 }
-
-
