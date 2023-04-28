@@ -1,10 +1,10 @@
-#include "main.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <signal.h>
 #include <errno.h>
+#include "main.h"
 
 #define MAX_ARGS 100
 
@@ -46,7 +46,7 @@ int main(int argc __attribute__((unused)), char **argv __attribute__((unused)), 
         token = strtok(line, " ");
         while (token != NULL && i < MAX_ARGS - 1)
         {
-            args[i++] = token;
+            args[i++] = strdup(token);
             token = strtok(NULL, " ");
         }
         args[i] = NULL;

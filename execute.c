@@ -14,13 +14,13 @@ int execute(char **args, char *const env[]) {
         perror("fork");
         return EXIT_FAILURE;
     } else if (pid == 0) {
-        /*Child process*/
+        /* Child process */
         if (execve(args[0], args, env) == -1) {
             perror("execve");
             return EXIT_FAILURE;
         }
     } else {
-        /*Parent process*/
+        /* Parent process */
         do {
             if (waitpid(pid, &status, WUNTRACED) == -1) {
                 perror("waitpid");
@@ -28,7 +28,7 @@ int execute(char **args, char *const env[]) {
             }
         } while (!WIFEXITED(status) && !WIFSIGNALED(status) && !WIFSTOPPED(status));
 
-        if (WIFSTOPPED(status)) {
+        if (WIFSIGNALED(status)) {
             fprintf(stderr, "Child process stopped by signal: %d\n", WSTOPSIG(status));
             return EXIT_FAILURE;
         }
