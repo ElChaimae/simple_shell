@@ -47,66 +47,26 @@ int execute_command(char** args) {
     }
 }
 
+#define MAX_OUTPUT_SIZE 1024
 
-int run_command(char* input) {
-    char** args = parse_args(input);
-    int result;
-    char *env_value, *path, *dir;
-    char command_path[256];
-    int command_found = 0;
+char* run_command(char* input) {
+    FILE *fp;
+    char output[MAX_OUTPUT_SIZE];
+    char *result = malloc(MAX_OUTPUT_SIZE * sizeof(char));
 
-    if (args[0] == NULL) {
-        free_args(args);
-        return 0;
-    }
-    if (strcmp(args[0], "exit") == 0) {
-        free_args(args);
-        exit(0);
-    } else if (strcmp(args[0], "env") == 0) {
-        for (env_value = *environ; env_value; env_value = *(environ++)) {
-            printf("%s\n", env_value);
-        }
-        free_args(args);
-        return 0;
+    fp = popen(input, "r");
+    if (fp == NULL) {
+        printf("Failed to run command\n" );
+        exit(1);
     }
 
-    if (args[0][0] == '.' || args[0][0] == '/') {
-        if (access(args[0], X_OK) == 0) {
-            command_found = 1;
-        } else {
-            printf("error: command not found: %s\n", args[0]);
-            free_args(args);
-            return -1;
-        }
-    } else {
-        path = getenv("PATH");
-        if (!path) {
-            printf("error: PATH environment variable not set\n");
-            free_args(args);
-            return -1;
-        }
-        dir = strtok(path, ":");
-        while (dir && !command_found) {
-            snprintf(command_path, sizeof(command_path), "%s/%s", dir, args[0]);
-            if (access(command_path, X_OK) == 0) {
-                args[0] = strdup(command_path);
-                command_found = 1;
-            } else {
-                dir = strtok(NULL, ":");
-            }
-        }
+    while (fgets(output, MAX_OUTPUT_SIZE, fp) != NULL) {
+        strcat(result, output);
     }
 
-    if (!command_found) {
-        printf("error: command not found: %s\n", args[0]);
-        free_args(args);
-        return -1;
-    }
-    result = execute_command(args);
-    free_args(args);
+    pclose(fp);
     return result;
 }
-
 void free_args(char** args) {
     int i;
 

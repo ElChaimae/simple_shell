@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-int run_command(char* input);
+char* run_command(char* input);
 void free_args(char** args);
 char** parse_args(char* input);
 int main(int argc, char* argv[]);
