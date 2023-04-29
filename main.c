@@ -11,7 +11,7 @@ int main() {
     int result;
 
     while(1) {
-        printf("my_shell> ");
+        printf("$");
         if(fgets(input, MAX_INPUT_SIZE, stdin) == NULL) break;
         input[strlen(input)-1] = '\0';
         result = run_command(input);
