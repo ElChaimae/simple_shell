@@ -16,6 +16,7 @@ int main() {
         input[strlen(input)-1] = '\0';
         result = run_command(input);
         if(result) break;
+printf("\n");
     }
 
     return 0;
