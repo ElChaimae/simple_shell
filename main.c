@@ -8,22 +8,22 @@
  */
 int main(int argc __attribute__((unused)), char **argv __attribute__((unused)))
 {
-char *input = NULL;
-size_t input_size = 0;
-char **args = NULL;
-int pipefd[2] = {-1, -1};
+    char *input = NULL;
+    size_t input_size = 0;
+    char **args = NULL;
+    int pipefd[2] = {-1, -1};
 
-while (1)
-{
-print_prompt();
-if (read_input(&input, &input_size) == -1)
-break;
-input[strcspn(input, "\n")] = '\0';
-args = tokenize(input);
-exec_cmd(args, pipefd);
-free(args);
-}
-free(input);
-return (0);
+    while (1)
+    {
+        print_prompt();
+        if (read_input(&input, &input_size) == -1)
+            break;
+        input[strcspn(input, "\n")] = '\0';
+        args = tokenize(input);
+        exec_cmd(args, pipefd);
+        free(args);
+    }
+    free(input);
+    return (0);
 }
 
