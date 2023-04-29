@@ -1,34 +1,23 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
-#include <sys/wait.h>
-#include "main.h"
 
-/**
- * main - entry point for the program
- * @argc: the number of command-line arguments passed to the program
- * @argv: an array of strings containing the command-line arguments
- * Return: 0 on success
- */
-int main(int argc __attribute__((unused)), char **argv __attribute__((unused)))
-{
-    char *input = NULL;
-    size_t input_size = 0;
-    char **args = NULL;
-    int pipefd[2] = {-1, -1};
+#define MAX_INPUT_SIZE 1024
 
-    while (1)
-    {
-        print_prompt();
-        if (read_input(&input, &input_size) == -1)
-            break;
-        input[strcspn(input, "\n")] = '\0';
-        args = tokenize(input);
-        exec_cmd(args, pipefd);
-        free(args);
+int run_command(char* input);
+
+int main() {
+    char input[MAX_INPUT_SIZE];
+    int result;
+
+    while(1) {
+        printf("my_shell> ");
+        if(fgets(input, MAX_INPUT_SIZE, stdin) == NULL) break;
+        input[strlen(input)-1] = '\0';
+        result = run_command(input);
+        if(result) break;
     }
-    free(input);
-    return (0);
+
+    return 0;
 }
 
