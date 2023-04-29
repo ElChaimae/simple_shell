@@ -93,114 +93,61 @@ char **tokenize(char *input)
     }
 
     tokens[pos] = NULL;
-    free(token);
     return tokens;
 }
 
-/**
- * exec_cmd - Execute a command with given arguments using execvp.
- * @args: The arguments for the command to be executed.
- * @pipefd: A file descriptor array for pipes.
- *
- * Return: On success, returns 0. On failure, returns -1.
- */
-int exec_cmd(char **args, int *pipefd)
-{
-    pid_t pid;
-    int status;
 
-    if (!args || !args[0])
-    {
-        return (-1);
-    }
-    if (strcmp(args[0], "exit") == 0)
-    {
-        exit(EXIT_SUCCESS);
-    }
-    else if (strcmp(args[0], "cd") == 0)
-    {
-        if (args[1] == NULL)
-        {
-            fprintf(stderr, "cd: expected argument to \"cd\"\n");
-        }
-        else if (chdir(args[1]) != 0)
-        {
-            perror("cd error");
-        }
-        return (0);
-    }
+/**
+ * exec_cmd - execute the command with arguments
+ * @args: the list of arguments for the command
+ * @pipefd: the file descriptors for the pipe
+ * Return: 0 on success, -1 on failure
+ */
+int exec_cmd(char **args, int pipefd[])
+{
+    int pid, status;
+
+    if (!args || !*args)
+        return -1;
 
     pid = fork();
     if (pid == -1)
     {
-        perror("Fork error");
-        return (-1);
+        perror("fork");
+        return -1;
     }
-    else if (pid == 0)
+
+    if (pid == 0)
     {
-        if (pipefd[0] != -1)
+        if (pipefd[READ_END] != -1)
         {
-            if (dup2(pipefd[0], STDIN_FILENO) == -1)
-            {
-                perror("Dup2 error");
-                exit(EXIT_FAILURE);
-            }
-            if (close(pipefd[0]) == -1)
-            {
-                perror("Close error");
-                exit(EXIT_FAILURE);
-            }
+            close(STDIN_FILENO);
+            dup(pipefd[READ_END]);
+            close(pipefd[READ_END]);
         }
 
-        if (pipefd[1] != -1)
+        if (pipefd[WRITE_END] != -1)
         {
-            if (dup2(pipefd[1], STDOUT_FILENO) == -1)
-            {
-                perror("Dup2 error");
-                exit(EXIT_FAILURE);
-            }
-            if (close(pipefd[1]) == -1)
-            {
-                perror("Close error");
-                exit(EXIT_FAILURE);
-            }
+            close(STDOUT_FILENO);
+            dup(pipefd[WRITE_END]);
+            close(pipefd[WRITE_END]);
         }
 
         if (execvp(args[0], args) == -1)
         {
-            perror("Exec error");
+            perror("execvp");
             exit(EXIT_FAILURE);
         }
     }
     else
     {
-        if (pipefd[0] != -1)
+        if (waitpid(pid, &status, 0) == -1)
         {
-            if (close(pipefd[0]) == -1)
-            {
-                perror("Close error");
-                return (-1);
-            }
+            perror("waitpid");
+            return -1;
         }
-
-        if (pipefd[1] != -1)
-        {
-            if (close(pipefd[1]) == -1)
-            {
-                perror("Close error");
-                return (-1);
-            }
-        }
-        do
-        {
-            if (waitpid(pid, &status, WUNTRACED) == -1)
-            {
-                perror("Wait error");
-                return (-1);
-            }
-        } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+        return 0;
     }
-    return (0);
+    return 0;
 }
-
 
