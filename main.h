@@ -33,14 +33,6 @@ char *value;
 struct alias *next;
 } alias_t;
 
-/* string functions */
-char *_strdup(char *str);
-int _strlen(char *s);
-int _strcmp(char *s1, char *s2);
-char *_strcpy(char *dest, char *src);
-char *_strcat(char *dest, char *src);
-char *_strchr(char *s, char c);
-
 /* token functions */
 char **tokenize(char *input);
 void free_tokens(char **tokens);
@@ -69,8 +61,8 @@ int read_input(char **input_line, size_t *input_size);
 int print_prompt(void);
 char **tokenize(char *input);
 int exec_cmd(char **args, int *pipefd);
-void execute_child(char **args);
-void wait_for_child(pid_t pid, int *status);
-
+char *replace_variable(char *variable, int status);
+char **parse_input(char *, int);
+int cd(char **args);
 
 #endif /* MAIN_H */

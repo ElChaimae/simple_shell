@@ -1,4 +1,5 @@
 #include "main.h"
+#include <string.h>
 
 /**
  * get_path_value - Get the PATH environment variable.
@@ -100,12 +101,12 @@ return (NULL);
 if (!find_in_directory(path, cmd, full_path))
 {
 char error_message[100];
-len = _strlen(cmd);
-_strcpy(error_message, cmd);
-_strcpy(error_message + len, ": ");
+len = strlen(cmd);
+strcpy(error_message, cmd);
+strcpy(error_message + len, ": ");
 len += 2;
-_strcpy(error_message + len, "command not found\n");
-len = _strlen(error_message);
+strcpy(error_message + len, "command not found\n");
+len = strlen(error_message);
 write(STDERR_FILENO, error_message, len);
 free(full_path);
 full_path = NULL;
