@@ -5,9 +5,10 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+
 int run_command(char* input);
 void free_args(char** args);
-int main(int argc, char* argv[]);
+int main();
 int execute_command(char** args);
 char** parse_args(char* input);
 

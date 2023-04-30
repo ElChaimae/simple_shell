@@ -1,12 +1,10 @@
+#include "main.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <ctype.h>
 #include <sys/wait.h>
-#include <readline/readline.h>
-#include <readline/history.h>
-#include "main.h"
 
 #define MAX_ARGS 10
 
@@ -38,15 +36,14 @@ int execute_command(char** args) {
         perror("fork");
         return -1;
     } else if (pid == 0) {
-        execvp(args[0], args);
-        perror("exec");
-        exit(1);
+        execve(args[0], args, environ);
+        perror("execve");
+        _exit(1);
     } else {
         waitpid(pid, &status, 0);
         return WIFEXITED(status) ? WEXITSTATUS(status) : -1;
     }
 }
-
 
 int run_command(char* input) {
     char** args = parse_args(input);
