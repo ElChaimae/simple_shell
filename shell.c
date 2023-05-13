@@ -5,8 +5,12 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <sys/wait.h>
+#include <string.h>
+
 
 #define MAX_ARGS 10
+
+void free_args(char** args);
 
 extern char **environ;
 
@@ -45,6 +49,7 @@ int execute_command(char** args) {
     }
 }
 
+
 int run_command(char* input) {
     char** args = parse_args(input);
     int result;
@@ -56,6 +61,7 @@ int run_command(char* input) {
         free_args(args);
         return 0;
     }
+
     if (strcmp(args[0], "exit") == 0) {
         free_args(args);
         exit(0);
@@ -71,14 +77,14 @@ int run_command(char* input) {
         if (access(args[0], X_OK) == 0) {
             command_found = 1;
         } else {
-            printf("error: command not found: %s\n", args[0]);
+            fprintf(stderr, "%s: 1: %s: not found\n", "./hsh", args[0]);
             free_args(args);
             return -1;
         }
     } else {
         path = getenv("PATH");
         if (!path) {
-            printf("error: PATH environment variable not set\n");
+            fprintf(stderr, "error: PATH environment variable not set\n");
             free_args(args);
             return -1;
         }
@@ -95,14 +101,22 @@ int run_command(char* input) {
     }
 
     if (!command_found) {
-        printf("error: command not found: %s\n", args[0]);
+        fprintf(stderr, "%s: 1: %s: not found\n", "./hsh", args[0]);
         free_args(args);
         return -1;
     }
+
     result = execute_command(args);
+
+    if (strcmp(args[0], "exit") != 0) {
+        printf("$ ");
+        fflush(stdout);
+    }
+
     free_args(args);
     return result;
 }
+
 
 void free_args(char** args) {
     int i;

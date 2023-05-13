@@ -14,16 +14,28 @@
 
 int run_command(char* input);
 
-int main(void)
-{
+int main(void) {
     char *input = NULL;
     size_t input_size = 0;
     int status = 0;
 
     while (1) {
-        printf("$ ");
-        if (getline(&input, &input_size, stdin) == -1) break;
+        if (isatty(fileno(stdin))) {
+            printf("$ ");
+            fflush(stdout);
+        }
+
+        if (getline(&input, &input_size, stdin) == -1)
+            break;
+
+        input[strcspn(input, "\n")] = '\0';
+
         status = run_command(input);
+
+        if (isatty(fileno(stdin)) && status != 0) {
+            printf("$ ");
+            fflush(stdout);
+        }
     }
 
     free(input);
