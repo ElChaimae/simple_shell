@@ -21,7 +21,7 @@ int main(void) {
 
     while (1) {
         if (isatty(fileno(stdin))) {
-            printf("$ ");
+            write_stdout("$ ", 2);
             fflush(stdout);
         }
 
@@ -33,8 +33,7 @@ int main(void) {
         status = run_command(input);
 
         if (isatty(fileno(stdin)) && status != 0) {
-            printf("$ ");
-            fflush(stdout);
+            write_stderr("\n", 1);
         }
     }
 

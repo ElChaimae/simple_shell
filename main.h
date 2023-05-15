@@ -1,16 +1,18 @@
-#ifndef MAIN_H_
-#define MAIN_H_
+#ifndef MAIN_H
+#define MAIN_H
+#define MAX_ARGS 512
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 
-
-int run_command(char* input);
-void free_args(char** args);
 int main();
-int execute_command(char** args);
+void free_args(char** args);
 char** parse_args(char* input);
+int execute_command(char** args);
+int run_command(char* input);
+void write_stdout(const char* message, size_t len);
+void write_stderr(const char* message, size_t len);
 
-#endif /* MAIN_H_ */
+#endif
 
