@@ -63,10 +63,13 @@ int run_command(char* input) {
         }
     } else {
         path = getenv("PATH");
-        if (path == NULL) {
-            write_stderr("error: PATH environment variable not set\n", 40);
-            free_args(args);
-            return -1;
+	if (path == NULL)
+	{
+		write_stderr("./hsh: 1: ", 10);
+		write_stderr(args[0], strlen(args[0]));
+		write_stderr(": not found\n", 12);
+		free_args(args);
+		return 127;
         }
         dir = strtok(path, ":");
         while (dir && !command_found) {
@@ -83,12 +86,13 @@ int run_command(char* input) {
         }
     }
 
-    if (!command_found) {
-        write_stderr("./hsh: 1: ", 13);
+    if (!command_found)
+    {
+        write_stderr("./hsh: 1: ", 10);
         write_stderr(args[0], strlen(args[0]));
         write_stderr(": not found\n", 12);
         free_args(args);
-        return -1;
+        return 127;
     }
 
     result = execute_command(args);
