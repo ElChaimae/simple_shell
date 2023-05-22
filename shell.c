@@ -12,16 +12,6 @@ void write_stderr(const char* message, size_t len) {
     write(STDERR_FILENO, message, len);
 }
 
-void free_args(char** args) {
-    int i;
-
-    if (args) {
-        for (i = 0; args[i]; i++) {
-            free(args[i]);
-        }
-        free(args);
-    }
-}
 
 char** parse_args(char* input) {
     char** args = malloc((MAX_ARGS + 1) * sizeof(char*));
@@ -62,5 +52,16 @@ char** parse_args(char* input) {
 
     args[arg_count] = NULL;
     return args;
+}
+
+void free_args(char** args) {
+    int i;
+
+    if (args) {
+        for (i = 0; args[i]; i++) {
+            free(args[i]);
+        }
+        free(args);
+    }
 }
 

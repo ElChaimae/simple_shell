@@ -29,7 +29,11 @@ int execute_command(char** args) {
 }
 
 
-int run_command(char* input) {
+
+#include <stdlib.h>
+#include <string.h>
+
+int run_command(char* input, alias_t** alias_list) {
     char** args;
     int result;
     char* path;
@@ -37,22 +41,35 @@ int run_command(char* input) {
     char command_path[1024];
     int command_found = 0;
     char** env_value;
+    int exit_status = 0;
+    alias_t* alias;
 
+    /* Parse arguments */
     args = parse_args(input);
 
+    /* Handle special commands */
     if (!args[0]) {
         free_args(args);
         return 0;
     }
 
+    /* Check if the entered command is an alias */
+    alias = find_alias(alias_list, args[0]);
+    if (alias != NULL) {
+        /* Replace the command with the alias value */
+        free(args[0]);
+        args[0] = strdup(alias->value);
+    }
+
     if (strcmp(args[0], "exit") == 0) {
-        int exit_status = 0;
-        if (args[1]) {
+        
+	if (args[1]) {
             exit_status = atoi(args[1]);
         }
         free_args(args);
         exit(exit_status);
     } else if (strcmp(args[0], "env") == 0) {
+        /* Print environment variables */
         for (env_value = environ; *env_value; env_value++) {
             write_stdout(*env_value, strlen(*env_value));
             write_stdout("\n", 1);
@@ -60,6 +77,7 @@ int run_command(char* input) {
         free_args(args);
         return 0;
     } else if (strcmp(args[0], "setenv") == 0) {
+        /* Set environment variable */
         if (args[1] && args[2]) {
             if (setenv(args[1], args[2], 1) == -1) {
                 perror("setenv");
@@ -70,6 +88,7 @@ int run_command(char* input) {
         free_args(args);
         return 0;
     } else if (strcmp(args[0], "unsetenv") == 0) {
+        /* Unset environment variable */
         if (args[1]) {
             if (unsetenv(args[1]) == -1) {
                 perror("unsetenv");
@@ -79,8 +98,14 @@ int run_command(char* input) {
         }
         free_args(args);
         return 0;
+    } else if (strcmp(args[0], "cd") == 0) {
+        /* Change directory */
+        result = cd(args);
+        free_args(args);
+        return result;
     }
 
+    /* Check if the command is an executable file */
     if (args[0][0] == '.' || args[0][0] == '/' || args[0][0] == '~') {
         if (access(args[0], X_OK) == 0) {
             command_found = 1;
@@ -92,6 +117,7 @@ int run_command(char* input) {
             return -1;
         }
     } else {
+        /* Search for the command in the directories specified by PATH */
         path = getenv("PATH");
         if (path == NULL) {
             write_stderr("./hsh: 1: ", 10);
@@ -119,6 +145,7 @@ int run_command(char* input) {
         }
     }
 
+    /* Execute the command */
     if (!command_found) {
         write_stderr("./hsh: 1: ", 10);
         write_stderr(args[0], strlen(args[0]));
@@ -132,4 +159,5 @@ int run_command(char* input) {
     free_args(args);
     return result;
 }
+
 
