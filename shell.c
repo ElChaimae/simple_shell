@@ -4,9 +4,6 @@
 #include <string.h>
 #include <unistd.h>
 
-
-
-
 void write_stdout(const char* message, size_t len) {
     write(STDOUT_FILENO, message, len);
 }
@@ -14,7 +11,6 @@ void write_stdout(const char* message, size_t len) {
 void write_stderr(const char* message, size_t len) {
     write(STDERR_FILENO, message, len);
 }
-
 
 void free_args(char** args) {
     int i;
@@ -36,11 +32,34 @@ char** parse_args(char* input) {
         perror("malloc");
         exit(1);
     }
-    arg = strtok(input, " \t\n\r");
-    while (arg && arg_count < MAX_ARGS) {
+
+    while (*input) {
+        while (*input && (*input == ' ' || *input == '\t'))
+            input++;
+
+        if (*input == '\0' || *input == '\n')
+            break;
+
+        if (*input == '"') {
+            input++;
+            arg = input;
+            while (*input && *input != '"')
+                input++;
+        } else {
+            arg = input;
+            while (*input && *input != ' ' && *input != '\t')
+                input++;
+        }
+
+        if (*input)
+            *input++ = '\0';
+
         args[arg_count++] = strdup(arg);
-        arg = strtok(NULL, " \t\n\r");
+
+        if (arg_count >= MAX_ARGS)
+            break;
     }
+
     args[arg_count] = NULL;
     return args;
 }

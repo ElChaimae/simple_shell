@@ -1,10 +1,11 @@
 #ifndef MAIN_H
 #define MAIN_H
-#define MAX_ARGS 512
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+
+#define MAX_ARGS 512
 
 int main();
 void free_args(char** args);
