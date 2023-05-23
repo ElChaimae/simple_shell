@@ -12,37 +12,47 @@
 
 #define MAX_INPUT_SIZE 1024
 
-int run_command(char* input, alias_t** alias_list);
+/**
+ * main - entry point for the program
+ * @input: user input
+ * @alias_list: struct for alias
+ * Return: 0 on success
+ */
 
-int main(void) {
-    char *input = NULL;
-    size_t input_size = 0;
-    int status = 0;
-    alias_t* alias_list = NULL;
+int run_command(char *input, alias_t **alias_list);
 
-    while (1) {
-        if (isatty(fileno(stdin))) {
-            write_stdout("$ ", 2);
-            fflush(stdout);
-        }
+int main(void)
+{
+char *input = NULL;
+size_t input_size = 0;
+int status = 0;
+alias_t* alias_list = NULL;
 
-        if (getline(&input, &input_size, stdin) == -1)
-            break;
+while (1)
+{
+if (isatty(fileno(stdin)))
+{
+write_stdout("$ ", 2);
+fflush(stdout);
+}
+if (getline(&input, &input_size, stdin) == -1)
+break;
 
-        input[strcspn(input, "\n")] = '\0';
+input[strcspn(input, "\n")] = '\0';
 
-	status = run_command(input, &alias_list);
+status = run_command(input, &alias_list);
 
-        if (isatty(fileno(stdin)) && status != 0) {
-            write_stderr("\n", 1);
-        }
+if (isatty(fileno(stdin)) && status != 0)
+{
+write_stderr("\n", 1);
+}
 
-        free(input);    /* Free the allocated memory after each iteration */
-        input = NULL;   /* Reset the input pointer to NULL */
-        input_size = 0; /* Reset the input size to 0 */
-    }
+free(input);    /* Free the allocated memory after each iteration */
+input = NULL;   /* Reset the input pointer to NULL */
+input_size = 0; /* Reset the input size to 0 */
+}
 
-    free(input); /* Free the input variable before exiting */
-    return status;
+free(input); /* Free the input variable before exiting */
+return (status);
 }
 
