@@ -26,7 +26,7 @@ int main(void)
 char *input = NULL;
 size_t input_size = 0;
 int status = 0;
-alias_t* alias_list = NULL;
+alias_t *alias_list = NULL;
 
 while (1)
 {
