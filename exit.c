@@ -11,17 +11,17 @@
  */
 long str_to_long(char *str)
 {
-    char *endptr;
-    long result;
+char *endptr;
+long result;
 
-    result = strtol(str, &endptr, 10);
-    if (*endptr != '\0')
-    {
-        fprintf(stderr, "Invalid exit status: %s\n", str);
-        return -1;
-    }
+result = strtol(str, &endptr, 10);
+if (*endptr != '\0')
+{
+fprintf(stderr, "Invalid exit status: %s\n", str);
+return (-1);
+}
 
-    return result;
+return (result);
 }
 
 /**
@@ -31,17 +31,17 @@ long str_to_long(char *str)
  */
 int exit_shell(char **args)
 {
-    int status = 0;
+int status = 0;
 
-    if (args[1] != NULL)
-    {
-        status = (int)str_to_long(args[1]);
-        if (status == -1)
-        {
-            return 1; /*Return non-zero value to indicate error*/
-        }
-    }
+if (args[1] != NULL)
+{
+status = (int)str_to_long(args[1]);
+if (status == -1)
+{
+return (1); /*Return non-zero value to indicate error*/
+}
+}
 
-    exit(status);
+exit(status);
 }
 
