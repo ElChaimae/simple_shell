@@ -20,15 +20,15 @@ typedef struct alias {
 
 int main();
 void free_args(char **args);
-char* find_command(char* cmd, char* command_path);
+char* find_command(char *cmd, char *command_path);
 char **parse_args(char *input);
 int execute_command(char **args);
-int run_command(char* input, alias_t** alias_list);
+int run_command(char *input, alias_t **alias_list);
 void write_stdout(const char *message, size_t len);
 void write_stderr(const char *message, size_t len);
 void add_alias(alias_t **alias_list, char *name, char *value);
 int alias_builtin(char **args, alias_t **alias_list);
-alias_t* find_alias(alias_t** alias_list, const char* name);
+alias_t* find_alias(alias_t **alias_list, const char *name);
 void cd_builtin(char **args);
 int command_separator(char *input);
 void env_builtin(char **envp);
