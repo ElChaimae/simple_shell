@@ -12,15 +12,22 @@
 #define MAX_ARGS 512
 #define BUFFER_SIZE 1024
 
-typedef struct alias {
-    char *name;
-    char *value;
-    struct alias *next;
+/**
+ * struct alias - struct for alias
+ * @name: The name of the alias
+ * @value: The value of the alias
+ * @next: next alias
+ */
+typedef struct alias
+{
+char *name;
+char *value;
+struct alias *next;
 } alias_t;
 
-int main();
+int main(void);
 void free_args(char **args);
-char* find_command(char *cmd, char *command_path);
+char *find_command(char *cmd, char *command_path);
 char **parse_args(char *input);
 int execute_command(char **args);
 int run_command(char *input, alias_t **alias_list);
@@ -28,7 +35,7 @@ void write_stdout(const char *message, size_t len);
 void write_stderr(const char *message, size_t len);
 void add_alias(alias_t **alias_list, char *name, char *value);
 int alias_builtin(char **args, alias_t **alias_list);
-alias_t* find_alias(alias_t **alias_list, const char *name);
+alias_t *find_alias(alias_t **alias_list, const char *name);
 void cd_builtin(char **args);
 int command_separator(char *input);
 void env_builtin(char **envp);
@@ -53,8 +60,8 @@ char *get_path(char *command, char **envp);
 char **parse_input(char *input);
 int handle_built_in_commands(char **args);
 void print_process_info(int pid, int status);
-char* replace_variables(char* buffer);
-char* get_variable_value(char* variable);
+char *replace_variables(char *buffer);
+char *get_variable_value(char *variable);
 
 #endif /* MAIN_H */
 
