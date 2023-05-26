@@ -59,7 +59,6 @@ current->next = new_alias;
 * alias_builtin - creates an alias for a command
 * @args: arguments to the "alias" command
 * @alias_list: pointer to the head of the alias list
-*
 * Return: always 0 (success)
 */
 int alias_builtin(char **args, alias_t **alias_list)

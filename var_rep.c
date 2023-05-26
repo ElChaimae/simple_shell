@@ -1,5 +1,11 @@
 #include "main.h"
 
+/**
+ * replace_variables - Replaces variables in a string with
+ * their corresponding values.
+ * @buffer: The string containing variables to be replaced.
+ * Return: 0 on success
+ */
 char *replace_variables(char *buffer)
 {
 char *token;

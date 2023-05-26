@@ -8,6 +8,11 @@
 
 extern char **environ;
 
+/**
+ * execute_command - executes a command
+ * @args: arguments passed
+ * Return: 0
+ */
 int execute_command(char **args)
 {
 int status;
@@ -34,6 +39,13 @@ return (-1);
 }
 }
 
+
+/**
+ * run_command - runs a command
+ * @alias_list: alias struct
+ * @input: user command
+ * Return: 0
+ */
 int run_command(char *input, alias_t **alias_list)
 {
 char **args;

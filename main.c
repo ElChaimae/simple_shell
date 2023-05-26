@@ -11,7 +11,6 @@
 #include <signal.h>
 
 #define MAX_INPUT_SIZE 1024
-
 /**
  * main - entry point for the program
  * @input: user input
