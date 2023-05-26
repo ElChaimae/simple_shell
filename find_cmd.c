@@ -7,6 +7,7 @@
 /**
  * find_command - Find the full path of a command in PATH directories.
  * @cmd: The name of the command to find.
+ * @command_path: command path
  * Return: On success, returns a pointer to the full path of the command.
  * On failure, returns NULL.
  */
